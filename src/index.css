@@ -1,0 +1,167 @@
+:root {
+  /* Surfaces */
+  --bg: #f6f7fa;
+  --surface-1: #ffffff;
+  --surface-2: #eef0f5;
+  --border: #dfe2e9;
+  --border-strong: #c9cedb;
+
+  /* Ink */
+  --text: #1c2130;
+  --text-muted: #626b7a;
+  --text-faint: #8991a1;
+
+  /* Accent — "quest" indigo, primary interactive color */
+  --accent: #32408a;
+  --accent-soft: #eceffb;
+  --accent-strong: #232f70;
+
+  /* Gold — reserved for gamification (XP, badges, streaks), never the base accent */
+  --gold: #8a6110;
+  --gold-soft: #f7edd8;
+
+  /* Semantic */
+  --success: #2f7d4f;
+  --success-soft: #e5f3ea;
+  --danger: #9c3b46;
+  --danger-soft: #f9e9ea;
+
+  --shadow: rgba(28, 33, 48, 0.08) 0 6px 16px -4px, rgba(28, 33, 48, 0.05) 0 2px 6px -1px;
+
+  --font-heading: 'Spectral', Georgia, serif;
+  --font-body: 'Inter', system-ui, 'Segoe UI', Roboto, sans-serif;
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  font: 16px/1.55 var(--font-body);
+  color-scheme: light dark;
+  color: var(--text);
+  background: var(--bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #12151b;
+    --surface-1: #1a1e27;
+    --surface-2: #20242f;
+    --border: #2b303c;
+    --border-strong: #3a4050;
+
+    --text: #e7e9ee;
+    --text-muted: #9aa3b2;
+    --text-faint: #6b7484;
+
+    --accent: #8b9bf5;
+    --accent-soft: #232a4d;
+    --accent-strong: #b1bbf9;
+
+    --gold: #d9ac53;
+    --gold-soft: #362c17;
+
+    --success: #5cb885;
+    --success-soft: #17301f;
+    --danger: #e2929c;
+    --danger-soft: #3a2226;
+
+    --shadow: rgba(0, 0, 0, 0.4) 0 6px 16px -4px, rgba(0, 0, 0, 0.25) 0 2px 6px -1px;
+  }
+}
+
+:root[data-theme='dark'] {
+  --bg: #12151b;
+  --surface-1: #1a1e27;
+  --surface-2: #20242f;
+  --border: #2b303c;
+  --border-strong: #3a4050;
+
+  --text: #e7e9ee;
+  --text-muted: #9aa3b2;
+  --text-faint: #6b7484;
+
+  --accent: #8b9bf5;
+  --accent-soft: #232a4d;
+  --accent-strong: #b1bbf9;
+
+  --gold: #d9ac53;
+  --gold-soft: #362c17;
+
+  --success: #5cb885;
+  --success-soft: #17301f;
+  --danger: #e2929c;
+  --danger-soft: #3a2226;
+
+  --shadow: rgba(0, 0, 0, 0.4) 0 6px 16px -4px, rgba(0, 0, 0, 0.25) 0 2px 6px -1px;
+}
+
+:root[data-theme='light'] {
+  --bg: #f6f7fa;
+  --surface-1: #ffffff;
+  --surface-2: #eef0f5;
+  --border: #dfe2e9;
+  --border-strong: #c9cedb;
+
+  --text: #1c2130;
+  --text-muted: #626b7a;
+  --text-faint: #8991a1;
+
+  --accent: #32408a;
+  --accent-soft: #eceffb;
+  --accent-strong: #232f70;
+
+  --gold: #8a6110;
+  --gold-soft: #f7edd8;
+
+  --success: #2f7d4f;
+  --success-soft: #e5f3ea;
+  --danger: #9c3b46;
+  --danger-soft: #f9e9ea;
+
+  --shadow: rgba(28, 33, 48, 0.08) 0 6px 16px -4px, rgba(28, 33, 48, 0.05) 0 2px 6px -1px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+#root {
+  width: 100%;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+
+body {
+  margin: 0;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  text-wrap: balance;
+  margin: 0 0 8px;
+}
+
+p {
+  margin: 0 0 12px;
+}
+
+code {
+  font-family: var(--mono);
+  font-size: 0.9em;
+  background: var(--surface-2);
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+a {
+  color: var(--accent);
+}
+
+button {
+  font: inherit;
+}

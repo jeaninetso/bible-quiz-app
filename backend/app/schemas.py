@@ -17,3 +17,12 @@ class LoginRequest(BaseModel):
 
 class UserOut(CamelModel):
     username: str
+
+
+class BookOut(CamelModel):
+    id: int
+    code: str
+    name: str
+    testament: str
+    chapter_count: int
+    is_available: bool

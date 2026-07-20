@@ -1,3 +1,4 @@
+import { BookLibrary } from './components/BookLibrary';
 import { LoginForm } from './components/LoginForm';
 import { ProtectedHome } from './components/ProtectedHome';
 import { useAuth } from './lib/useAuth';
@@ -16,7 +17,12 @@ function App() {
 
       {auth.status === 'loading' && <p role="status">Loading…</p>}
       {auth.status === 'anonymous' && <LoginForm onLogin={auth.login} />}
-      {auth.status === 'authenticated' && <ProtectedHome user={auth.user} onLogout={auth.logout} />}
+      {auth.status === 'authenticated' && (
+        <>
+          <ProtectedHome user={auth.user} onLogout={auth.logout} />
+          <BookLibrary />
+        </>
+      )}
     </main>
   );
 }

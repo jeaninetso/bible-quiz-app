@@ -3,6 +3,7 @@ import { fetchJson } from '../lib/api';
 import { validateBooks } from '../data/validateBooks';
 import type { Book } from '../types/book';
 import { BookCard } from './BookCard';
+import { PassagePreview } from './PassagePreview';
 import './BookLibrary.css';
 
 type LoadState = { status: 'loading' } | { status: 'error'; message: string } | { status: 'loaded'; books: Book[] };
@@ -58,11 +59,7 @@ export function BookLibrary() {
           ))}
         </div>
       </div>
-      {selectedBook && (
-        <p className="book-library__selection-note">
-          <strong>{selectedBook.name}</strong> selected — quiz generation arrives in a later phase.
-        </p>
-      )}
+      {selectedBook && <PassagePreview book={selectedBook} />}
     </div>
   );
 }

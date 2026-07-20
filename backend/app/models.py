@@ -3,7 +3,7 @@ Phases 6 and 7."""
 
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, Integer, String, func
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database import Base
@@ -36,3 +36,21 @@ class Book(Base):
     chapter_count: Mapped[int] = mapped_column(Integer, nullable=False)
     order_index: Mapped[int] = mapped_column(Integer, nullable=False, unique=True)
     is_available: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
+
+class PassageCache(Base):
+    """Short-TTL cache of fetched ESV text only — never the Claude-generated
+    quiz output, or retakes would stop being fresh. Kept short-lived (not a
+    permanent archive) per the ESV API's terms, which encourage clearing
+    cached text periodically so corrections/updates propagate."""
+
+    __tablename__ = "passage_cache"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    book_id: Mapped[int] = mapped_column(ForeignKey("books.id"), nullable=False)
+    reference: Mapped[str] = mapped_column(String, nullable=False)
+    esv_text: Mapped[str] = mapped_column(Text, nullable=False)
+    fetched_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    expires_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+
+    __table_args__ = (UniqueConstraint("book_id", "reference"),)

@@ -26,3 +26,8 @@ class BookOut(CamelModel):
     testament: str
     chapter_count: int
     is_available: bool
+
+
+class PassageOut(CamelModel):
+    reference: str
+    text: str

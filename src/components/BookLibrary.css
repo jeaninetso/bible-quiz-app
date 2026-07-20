@@ -90,12 +90,3 @@
   background: var(--surface-2);
   color: var(--text-faint);
 }
-
-.book-library__selection-note {
-  margin-top: 18px;
-  padding: 14px 16px;
-  border-radius: 8px;
-  background: var(--accent-soft);
-  color: var(--accent-strong);
-  font-size: 14px;
-}

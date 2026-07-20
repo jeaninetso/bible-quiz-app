@@ -23,35 +23,3 @@
   font-size: 17px;
   max-width: 48ch;
 }
-
-.app__status {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 24px;
-  padding: 10px 16px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--surface-1);
-  box-shadow: var(--shadow);
-  font-size: 14.5px;
-}
-
-.app__status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.app__status-dot--ok {
-  background: var(--success);
-}
-
-.app__status-dot--error {
-  background: var(--danger);
-}
-
-.app__status-dot--pending {
-  background: var(--text-faint);
-}

@@ -1,17 +1,24 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.config import CORS_ORIGIN
+from app.routers import auth as auth_router
+
 app = FastAPI(title="Scripture Quest API")
 
-# Local dev only — Vite may pick a different port if 5173 is taken.
-# Tighten this to a specific origin (and enable allow_credentials) once
-# Phase 2 adds session-cookie auth.
+# Credentialed requests (cookies) require an exact origin, not a wildcard or
+# regex — browsers reject Access-Control-Allow-Origin: * when credentials
+# are involved. CORS_ORIGIN defaults to the Vite dev port; override it once
+# this is ever deployed somewhere else.
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r"http://localhost:\d+",
+    allow_origins=[CORS_ORIGIN],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(auth_router.router)
 
 
 @app.get("/health")

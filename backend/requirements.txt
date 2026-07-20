@@ -5,7 +5,7 @@ alembic==1.14.0
 pydantic==2.10.4
 python-dotenv==1.0.1
 psycopg[binary]>=3.2.4,<3.3
-passlib[bcrypt]==1.7.4
+bcrypt==4.2.1
 itsdangerous==2.2.0
 httpx==0.28.1
 anthropic==0.42.0

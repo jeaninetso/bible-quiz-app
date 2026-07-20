@@ -1,4 +1,18 @@
-"""SQLAlchemy models. Empty for now — User arrives in Phase 2 (auth),
-Book/UserBookProgress/QuizAttempt/Badge in Phases 3, 6, and 7."""
+"""SQLAlchemy models. Book/UserBookProgress/QuizAttempt/Badge arrive in
+Phases 3, 6, and 7."""
 
-from app.database import Base  # noqa: F401 — re-exported for Alembic's target_metadata
+from datetime import datetime
+
+from sqlalchemy import DateTime, String, func
+from sqlalchemy.orm import Mapped, mapped_column
+
+from app.database import Base
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    username: Mapped[str] = mapped_column(String, unique=True, nullable=False)
+    password_hash: Mapped[str] = mapped_column(String, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())

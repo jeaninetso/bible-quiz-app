@@ -1,31 +1,10 @@
-import { useEffect, useState } from 'react';
-import { fetchJson } from './lib/api';
+import { LoginForm } from './components/LoginForm';
+import { ProtectedHome } from './components/ProtectedHome';
+import { useAuth } from './lib/useAuth';
 import './App.css';
 
-type HealthState = 'pending' | 'ok' | 'error';
-
 function App() {
-  const [health, setHealth] = useState<HealthState>('pending');
-
-  useEffect(() => {
-    let cancelled = false;
-    fetchJson('/health')
-      .then(() => {
-        if (!cancelled) setHealth('ok');
-      })
-      .catch(() => {
-        if (!cancelled) setHealth('error');
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const statusText = {
-    pending: 'Checking backend…',
-    ok: 'Backend connected',
-    error: "Backend unreachable — run `uvicorn app.main:app --reload` in backend/",
-  }[health];
+  const auth = useAuth();
 
   return (
     <main className="app">
@@ -34,10 +13,10 @@ function App() {
       <p className="app__subtitle">
         Pick a book, take a fresh quiz, learn something new — and watch your streak grow.
       </p>
-      <div className="app__status" role="status">
-        <span className={`app__status-dot app__status-dot--${health}`} />
-        {statusText}
-      </div>
+
+      {auth.status === 'loading' && <p role="status">Loading…</p>}
+      {auth.status === 'anonymous' && <LoginForm onLogin={auth.login} />}
+      {auth.status === 'authenticated' && <ProtectedHome user={auth.user} onLogout={auth.logout} />}
     </main>
   );
 }

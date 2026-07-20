@@ -16,6 +16,11 @@ DATABASE_URL = os.environ.get("DATABASE_URL", f"sqlite:///{BACKEND_DIR / 'dev.db
 
 SESSION_SECRET = os.environ.get("SESSION_SECRET", "dev-only-insecure-secret")
 
+# Browsers reject Secure cookies over plain http — keep this false for local
+# dev, set COOKIE_SECURE=true once this is ever served over https.
+COOKIE_SECURE = os.environ.get("COOKIE_SECURE", "false").lower() == "true"
+CORS_ORIGIN = os.environ.get("CORS_ORIGIN", "http://localhost:5173")
+
 ESV_API_KEY = os.environ.get("ESV_API_KEY", "")
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 

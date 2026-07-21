@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { QuizAttempt, QuizResult, MeStats } from '../types/quiz';
+import type { QuizAttempt, QuizResult, MeStats, QuizHistoryItem, QuizReview } from '../types/quiz';
 
 const questionSchema = z.object({
   question: z.string(),
@@ -76,4 +76,32 @@ const meStatsSchema = z.object({
 
 export function validateMeStats(data: unknown): MeStats {
   return meStatsSchema.parse(data);
+}
+
+const quizHistoryItemSchema = z.object({
+  id: z.number(),
+  bookId: z.number(),
+  bookName: z.string(),
+  chapterReference: z.string(),
+  score: z.number(),
+  totalQuestions: z.number(),
+  submittedAt: z.string(),
+});
+
+export function validateQuizHistory(data: unknown): QuizHistoryItem[] {
+  return z.array(quizHistoryItemSchema).parse(data);
+}
+
+const quizReviewSchema = z.object({
+  id: z.number(),
+  bookName: z.string(),
+  chapterReference: z.string(),
+  score: z.number(),
+  totalQuestions: z.number(),
+  submittedAt: z.string(),
+  questions: z.array(questionResultSchema),
+});
+
+export function validateQuizReview(data: unknown): QuizReview {
+  return quizReviewSchema.parse(data);
 }

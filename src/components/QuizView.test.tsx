@@ -130,7 +130,8 @@ describe('QuizView', () => {
     expect(screen.getByText(/1-day streak/i)).toBeInTheDocument();
     expect(screen.getByText(/new badge: first steps/i)).toBeInTheDocument();
     expect(screen.getByText(/naomi was ruth’s mother-in-law/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Naomi' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /naomi/i })).toBeDisabled();
+    expect(screen.getAllByText(/correct answer/i).length).toBeGreaterThan(0);
   });
 
   it('calls onSubmitted after a successful submission', async () => {

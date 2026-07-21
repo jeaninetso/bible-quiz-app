@@ -9,6 +9,63 @@ from app.utils import utcnow
 router = APIRouter(prefix="/quiz-attempts", tags=["quiz-attempts"])
 
 
+def _build_question_results(
+    questions_json: list[dict], answers_json: list[int | None]
+) -> list[schemas.QuestionResultOut]:
+    results = []
+    for question, selected in zip(questions_json, answers_json):
+        is_correct = selected is not None and selected == question["correct_index"]
+        results.append(
+            schemas.QuestionResultOut(
+                question=question["question"],
+                options=question["options"],
+                correct_index=question["correct_index"],
+                explanation=question["explanation"],
+                selected_index=selected,
+                is_correct=is_correct,
+            )
+        )
+    return results
+
+
+@router.get("", response_model=list[schemas.QuizHistoryItemOut])
+def list_quiz_history(db: Session = Depends(get_db), current_user=Depends(auth.get_current_user)):
+    attempts = crud.list_completed_quiz_attempts(db, current_user.id)
+    books_by_id = {b.id: b for b in crud.list_books(db)}
+    return [
+        schemas.QuizHistoryItemOut(
+            id=attempt.id,
+            book_id=attempt.book_id,
+            book_name=books_by_id[attempt.book_id].name if attempt.book_id in books_by_id else attempt.chapter_reference,
+            chapter_reference=attempt.chapter_reference,
+            score=attempt.score,
+            total_questions=len(attempt.questions_json),
+            submitted_at=attempt.submitted_at,
+        )
+        for attempt in attempts
+    ]
+
+
+@router.get("/{attempt_id}", response_model=schemas.QuizReviewOut)
+def get_quiz_review(attempt_id: int, db: Session = Depends(get_db), current_user=Depends(auth.get_current_user)):
+    attempt = crud.get_quiz_attempt(db, attempt_id)
+    if attempt is None or attempt.user_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such quiz attempt")
+    if attempt.status != "completed":
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="This quiz attempt hasn't been submitted yet")
+
+    book = crud.get_book(db, attempt.book_id)
+    return schemas.QuizReviewOut(
+        id=attempt.id,
+        book_name=book.name if book else attempt.chapter_reference,
+        chapter_reference=attempt.chapter_reference,
+        score=attempt.score,
+        total_questions=len(attempt.questions_json),
+        submitted_at=attempt.submitted_at,
+        questions=_build_question_results(attempt.questions_json, attempt.answers_json),
+    )
+
+
 @router.post("/{attempt_id}/submit", response_model=schemas.QuizResultOut)
 def submit_quiz(
     attempt_id: int,
@@ -30,22 +87,8 @@ def submit_quiz(
             detail=f"Expected {len(questions)} answers, got {len(payload.answers)}",
         )
 
-    results = []
-    score = 0
-    for question, selected in zip(questions, payload.answers):
-        is_correct = selected is not None and selected == question["correct_index"]
-        if is_correct:
-            score += 1
-        results.append(
-            schemas.QuestionResultOut(
-                question=question["question"],
-                options=question["options"],
-                correct_index=question["correct_index"],
-                explanation=question["explanation"],
-                selected_index=selected,
-                is_correct=is_correct,
-            )
-        )
+    results = _build_question_results(questions, payload.answers)
+    score = sum(1 for r in results if r.is_correct)
 
     crud.submit_quiz_attempt(db, attempt, payload.answers, score)
 

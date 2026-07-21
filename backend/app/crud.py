@@ -89,6 +89,15 @@ def submit_quiz_attempt(
     return attempt
 
 
+def list_completed_quiz_attempts(db: Session, user_id: int) -> list[models.QuizAttempt]:
+    return (
+        db.query(models.QuizAttempt)
+        .filter(models.QuizAttempt.user_id == user_id, models.QuizAttempt.status == "completed")
+        .order_by(models.QuizAttempt.submitted_at.desc())
+        .all()
+    )
+
+
 def get_or_create_progress(db: Session, user_id: int, book_id: int) -> models.UserBookProgress:
     progress = (
         db.query(models.UserBookProgress)

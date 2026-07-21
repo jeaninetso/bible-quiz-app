@@ -113,3 +113,27 @@ class MeStatsOut(CamelModel):
     longest_streak: int
     quizzes_completed: int
     badges: list[EarnedBadgeOut]
+
+
+class QuizHistoryItemOut(CamelModel):
+    id: int
+    book_id: int
+    book_name: str
+    chapter_reference: str
+    score: int
+    total_questions: int
+    submitted_at: datetime
+
+
+class QuizReviewOut(CamelModel):
+    """Read-only replay of a completed attempt — same per-question shape as
+    QuizResultOut, but without xp_earned/progress/new_badges, which describe
+    a one-time submission event rather than durable history."""
+
+    id: int
+    book_name: str
+    chapter_reference: str
+    score: int
+    total_questions: int
+    submitted_at: datetime
+    questions: list[QuestionResultOut]

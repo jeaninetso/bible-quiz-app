@@ -9,7 +9,7 @@
   /* Ink */
   --text: #1c2130;
   --text-muted: #626b7a;
-  --text-faint: #8991a1;
+  --text-faint: #656d7e;
 
   /* Accent — "quest" indigo, primary interactive color */
   --accent: #32408a;
@@ -52,7 +52,7 @@
 
     --text: #e7e9ee;
     --text-muted: #9aa3b2;
-    --text-faint: #6b7484;
+    --text-faint: #838b9b;
 
     --accent: #8b9bf5;
     --accent-soft: #232a4d;
@@ -79,7 +79,7 @@
 
   --text: #e7e9ee;
   --text-muted: #9aa3b2;
-  --text-faint: #6b7484;
+  --text-faint: #838b9b;
 
   --accent: #8b9bf5;
   --accent-soft: #232a4d;
@@ -105,7 +105,7 @@
 
   --text: #1c2130;
   --text-muted: #626b7a;
-  --text-faint: #8991a1;
+  --text-faint: #656d7e;
 
   --accent: #32408a;
   --accent-soft: #eceffb;
@@ -164,4 +164,16 @@ a {
 
 button {
   font: inherit;
+}
+
+/* One consistent keyboard-focus ring for every interactive element, so
+   custom-styled buttons (options, cards, tabs) don't fall back to
+   inconsistent or invisible browser defaults. Mouse/touch clicks don't
+   trigger :focus-visible, so this never shows up as an unwanted click ring. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }

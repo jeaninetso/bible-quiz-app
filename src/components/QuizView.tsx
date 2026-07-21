@@ -3,6 +3,7 @@ import { postJson } from '../lib/api';
 import { validateQuizAttempt, validateQuizResult } from '../data/validateQuiz';
 import type { QuizAttempt, QuizResult } from '../types/quiz';
 import type { Book } from '../types/book';
+import { QuizQuestionReview } from './QuizQuestionReview';
 import './QuizView.css';
 
 type LoadState = { status: 'loading' } | { status: 'error'; message: string } | { status: 'loaded'; quiz: QuizAttempt };
@@ -11,16 +12,6 @@ type SubmitState = { status: 'idle' } | { status: 'submitting' } | { status: 'er
 interface QuizViewProps {
   book: Book;
   onSubmitted?: () => void;
-}
-
-function optionClassName(questionIndex: number, optionIndex: number, selections: Record<number, number>, result: QuizResult | null) {
-  if (!result) {
-    return 'quiz-view__option' + (selections[questionIndex] === optionIndex ? ' quiz-view__option--selected' : '');
-  }
-  const q = result.questions[questionIndex];
-  if (optionIndex === q.correctIndex) return 'quiz-view__option quiz-view__option--correct';
-  if (optionIndex === q.selectedIndex) return 'quiz-view__option quiz-view__option--incorrect';
-  return 'quiz-view__option quiz-view__option--disabled';
 }
 
 export function QuizView({ book, onSubmitted }: QuizViewProps) {
@@ -105,26 +96,31 @@ export function QuizView({ book, onSubmitted }: QuizViewProps) {
         </div>
       )}
       <ol className="quiz-view__questions">
-        {quiz.questions.map((q, questionIndex) => (
-          <li key={questionIndex} className="quiz-view__question">
-            <p className="quiz-view__question-text">{q.question}</p>
-            <div className="quiz-view__options">
-              {q.options.map((option, optionIndex) => (
-                <button
-                  key={optionIndex}
-                  type="button"
-                  disabled={!!result}
-                  className={optionClassName(questionIndex, optionIndex, selections, result)}
-                  aria-pressed={selections[questionIndex] === optionIndex}
-                  onClick={() => setSelections((prev) => ({ ...prev, [questionIndex]: optionIndex }))}
-                >
-                  {option}
-                </button>
-              ))}
-            </div>
-            {result && <p className="quiz-view__explanation">{result.questions[questionIndex].explanation}</p>}
-          </li>
-        ))}
+        {quiz.questions.map((q, questionIndex) =>
+          result ? (
+            <QuizQuestionReview key={questionIndex} result={result.questions[questionIndex]} />
+          ) : (
+            <li key={questionIndex} className="quiz-view__question">
+              <p className="quiz-view__question-text">{q.question}</p>
+              <div className="quiz-view__options">
+                {q.options.map((option, optionIndex) => (
+                  <button
+                    key={optionIndex}
+                    type="button"
+                    className={
+                      'quiz-view__option' +
+                      (selections[questionIndex] === optionIndex ? ' quiz-view__option--selected' : '')
+                    }
+                    aria-pressed={selections[questionIndex] === optionIndex}
+                    onClick={() => setSelections((prev) => ({ ...prev, [questionIndex]: optionIndex }))}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+            </li>
+          ),
+        )}
       </ol>
       {!result && (
         <>

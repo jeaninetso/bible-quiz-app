@@ -20,71 +20,14 @@
   font-size: 14px;
 }
 
-.quiz-view__questions {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.quiz-view__question-text {
-  font-size: 15px;
-  font-weight: 600;
-  margin-bottom: 8px;
-}
-
-.quiz-view__options {
-  display: grid;
-  gap: 8px;
-}
-
-.quiz-view__option {
-  text-align: left;
-  font: inherit;
-  font-size: 14.5px;
-  padding: 10px 12px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  background: var(--surface-2);
-  color: var(--text);
-  cursor: pointer;
-}
-
-.quiz-view__option:hover {
-  border-color: var(--accent);
-}
-
+/* .quiz-view__questions/__question-text/__options/__option base styles and
+   the correct/incorrect/disabled review variants live in
+   QuizQuestionReview.css, since QuizHistory renders that component without
+   ever mounting QuizView. Only the interactive (pre-submission) selection
+   state is specific to this file. */
 .quiz-view__option--selected {
   border-color: var(--accent);
   background: var(--accent-soft);
-}
-
-.quiz-view__option:disabled {
-  cursor: default;
-}
-
-.quiz-view__option--correct {
-  border-color: var(--gold);
-  background: var(--gold-soft);
-  font-weight: 600;
-}
-
-.quiz-view__option--incorrect {
-  border-color: var(--danger);
-  background: var(--danger-soft);
-}
-
-.quiz-view__option--disabled {
-  opacity: 0.7;
-}
-
-.quiz-view__explanation {
-  margin: 8px 0 0;
-  font-size: 13.5px;
-  color: var(--text-muted);
-  font-style: italic;
 }
 
 .quiz-view__result-banner {

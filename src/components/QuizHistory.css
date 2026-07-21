@@ -1,0 +1,62 @@
+.quiz-history {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.quiz-history__item {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-1);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.quiz-history__summary {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 16px;
+  font: inherit;
+  text-align: left;
+  border: none;
+  background: none;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.quiz-history__book {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.quiz-history__score {
+  font-weight: 600;
+  color: var(--accent-strong);
+}
+
+.quiz-history__date {
+  margin-left: auto;
+  font-size: 13px;
+  color: var(--text-faint);
+}
+
+.quiz-history__review {
+  padding: 0 16px 16px;
+  border-top: 1px solid var(--border);
+}
+
+.quiz-history__error {
+  color: var(--danger);
+  font-size: 14px;
+}
+
+.quiz-history__empty {
+  color: var(--text-muted);
+  font-size: 14.5px;
+}

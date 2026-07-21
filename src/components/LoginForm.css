@@ -29,18 +29,13 @@
   color: var(--text);
 }
 
-.login-form input:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 1px;
-}
-
 .login-form button {
   margin-top: 4px;
   padding: 10px 14px;
   border-radius: 6px;
   border: none;
   background: var(--accent);
-  color: white;
+  color: var(--surface-1);
   font-weight: 600;
   cursor: pointer;
 }

@@ -62,3 +62,23 @@ export interface MeStats {
   quizzesCompleted: number;
   badges: EarnedBadge[];
 }
+
+export interface QuizHistoryItem {
+  id: number;
+  bookId: number;
+  bookName: string;
+  chapterReference: string;
+  score: number;
+  totalQuestions: number;
+  submittedAt: string;
+}
+
+export interface QuizReview {
+  id: number;
+  bookName: string;
+  chapterReference: string;
+  score: number;
+  totalQuestions: number;
+  submittedAt: string;
+  questions: QuestionResult[];
+}

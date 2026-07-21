@@ -15,3 +15,19 @@ export interface QuizAttempt {
   questions: Question[];
   funFacts: FunFact[];
 }
+
+export interface QuestionResult {
+  question: string;
+  options: string[];
+  correctIndex: number;
+  explanation: string;
+  selectedIndex: number | null;
+  isCorrect: boolean;
+}
+
+export interface QuizResult {
+  id: number;
+  score: number;
+  totalQuestions: number;
+  questions: QuestionResult[];
+}

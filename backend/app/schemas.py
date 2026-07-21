@@ -53,3 +53,27 @@ class QuizAttemptOut(CamelModel):
     chapter_reference: str
     questions: list[QuestionOut]
     fun_facts: list[FunFactOut]
+
+
+class SubmitQuizRequest(BaseModel):
+    # One entry per question, in order; None for a question left unanswered.
+    answers: list[int | None]
+
+
+class QuestionResultOut(CamelModel):
+    """Post-submission view of a question — now safe to include the answer
+    key, since scoring has already happened server-side."""
+
+    question: str
+    options: list[str]
+    correct_index: int
+    explanation: str
+    selected_index: int | None
+    is_correct: bool
+
+
+class QuizResultOut(CamelModel):
+    id: int
+    score: int
+    total_questions: int
+    questions: list[QuestionResultOut]

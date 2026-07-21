@@ -71,3 +71,19 @@ def create_quiz_attempt(
     db.commit()
     db.refresh(attempt)
     return attempt
+
+
+def get_quiz_attempt(db: Session, attempt_id: int) -> models.QuizAttempt | None:
+    return db.get(models.QuizAttempt, attempt_id)
+
+
+def submit_quiz_attempt(
+    db: Session, attempt: models.QuizAttempt, answers_json: list[int | None], score: int
+) -> models.QuizAttempt:
+    attempt.answers_json = answers_json
+    attempt.score = score
+    attempt.status = "completed"
+    attempt.submitted_at = utcnow()
+    db.commit()
+    db.refresh(attempt)
+    return attempt

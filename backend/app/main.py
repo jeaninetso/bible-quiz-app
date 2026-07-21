@@ -5,6 +5,7 @@ from app.config import CORS_ORIGIN
 from app.routers import auth as auth_router
 from app.routers import books as books_router
 from app.routers import quiz as quiz_router
+from app.routers import quiz_attempts as quiz_attempts_router
 
 app = FastAPI(title="Scripture Quest API")
 
@@ -23,6 +24,7 @@ app.add_middleware(
 app.include_router(auth_router.router)
 app.include_router(books_router.router)
 app.include_router(quiz_router.router)
+app.include_router(quiz_attempts_router.router)
 
 
 @app.get("/health")

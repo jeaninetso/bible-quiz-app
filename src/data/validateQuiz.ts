@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { QuizAttempt } from '../types/quiz';
+import type { QuizAttempt, QuizResult } from '../types/quiz';
 
 const questionSchema = z.object({
   question: z.string(),
@@ -21,4 +21,24 @@ const quizAttemptSchema = z.object({
 
 export function validateQuizAttempt(data: unknown): QuizAttempt {
   return quizAttemptSchema.parse(data);
+}
+
+const questionResultSchema = z.object({
+  question: z.string(),
+  options: z.array(z.string()),
+  correctIndex: z.number(),
+  explanation: z.string(),
+  selectedIndex: z.number().nullable(),
+  isCorrect: z.boolean(),
+});
+
+const quizResultSchema = z.object({
+  id: z.number(),
+  score: z.number(),
+  totalQuestions: z.number(),
+  questions: z.array(questionResultSchema),
+});
+
+export function validateQuizResult(data: unknown): QuizResult {
+  return quizResultSchema.parse(data);
 }

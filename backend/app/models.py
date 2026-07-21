@@ -1,4 +1,4 @@
-"""SQLAlchemy models. UserBookProgress/Badge arrive in Phases 6 and 7."""
+"""SQLAlchemy models. UserBookProgress/Badge arrive in Phase 7."""
 
 from datetime import datetime
 
@@ -71,3 +71,7 @@ class QuizAttempt(Base):
     questions_json: Mapped[list] = mapped_column(JSON, nullable=False)
     fun_facts_json: Mapped[list] = mapped_column(JSON, nullable=False)
     started_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    # Populated only once the attempt is submitted (status -> "completed").
+    answers_json: Mapped[list | None] = mapped_column(JSON, nullable=True)
+    score: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    submitted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)

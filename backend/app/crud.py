@@ -18,6 +18,13 @@ def create_user(db: Session, username: str, password_hash: str) -> models.User:
     return user
 
 
+def update_user_password(db: Session, user: models.User, password_hash: str) -> models.User:
+    user.password_hash = password_hash
+    db.commit()
+    db.refresh(user)
+    return user
+
+
 def list_books(db: Session) -> list[models.Book]:
     return db.query(models.Book).order_by(models.Book.order_index).all()
 

@@ -1,6 +1,12 @@
-"""One-off CLI to create your own login. There's no public /auth/register
-endpoint on purpose — this app is single-user, not multi-tenant, so keeping
-account creation off the network entirely keeps the attack surface small.
+"""One-off CLI to create your own login, or reset its password if it already
+exists. There's no public /auth/register endpoint on purpose — this app is
+single-user, not multi-tenant, so keeping account creation off the network
+entirely keeps the attack surface small.
+
+A password reset updates the existing row in place rather than deleting and
+recreating the user — deleting would orphan every QuizAttempt/
+UserBookProgress/UserBadge row still pointing at that user_id, silently
+wiping quiz history, XP, and badges.
 
 Usage: .venv/bin/python -m scripts.create_user <username>
 """
@@ -13,12 +19,18 @@ from app.auth import hash_password
 from app.database import Base, SessionLocal, engine
 
 
-def create_user(username: str, password: str) -> None:
+def create_or_reset_user(username: str, password: str) -> None:
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
     try:
-        if crud.get_user_by_username(db, username) is not None:
-            print(f"User '{username}' already exists.")
+        existing = crud.get_user_by_username(db, username)
+        if existing is not None:
+            answer = input(f"User '{username}' already exists. Reset their password? [y/N] ").strip().lower()
+            if answer != "y":
+                print("Left unchanged.")
+                return
+            crud.update_user_password(db, existing, hash_password(password))
+            print(f"Password updated for '{username}'.")
             return
         crud.create_user(db, username, hash_password(password))
         print(f"Created user '{username}'.")
@@ -38,4 +50,4 @@ if __name__ == "__main__":
         print("Passwords didn't match.")
         sys.exit(1)
 
-    create_user(username_arg, password_arg)
+    create_or_reset_user(username_arg, password_arg)

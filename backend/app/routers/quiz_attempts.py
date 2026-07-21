@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 
 from app import auth, crud, schemas
 from app.database import get_db
+from app.services import gamification
+from app.utils import utcnow
 
 router = APIRouter(prefix="/quiz-attempts", tags=["quiz-attempts"])
 
@@ -47,4 +49,30 @@ def submit_quiz(
 
     crud.submit_quiz_attempt(db, attempt, payload.answers, score)
 
-    return schemas.QuizResultOut(id=attempt.id, score=score, total_questions=len(questions), questions=results)
+    progress = crud.get_or_create_progress(db, current_user.id, attempt.book_id)
+    xp_earned = gamification.apply_quiz_result(progress, score, len(questions), utcnow().date())
+    crud.save_progress(db, progress)
+
+    already_earned = crud.earned_badge_codes(db, current_user.id)
+    total_quizzes = crud.sum_quizzes_completed(db, current_user.id)
+    new_badge_codes = gamification.determine_new_badge_codes(
+        already_earned, progress, score, len(questions), total_quizzes
+    )
+    new_badges = crud.award_badges(db, current_user.id, new_badge_codes)
+
+    return schemas.QuizResultOut(
+        id=attempt.id,
+        score=score,
+        total_questions=len(questions),
+        questions=results,
+        xp_earned=xp_earned,
+        progress=schemas.UserBookProgressOut(
+            xp=progress.xp,
+            level=progress.level,
+            current_streak=progress.current_streak,
+            longest_streak=progress.longest_streak,
+            best_score=progress.best_score,
+            quizzes_completed=progress.quizzes_completed,
+        ),
+        new_badges=[schemas.BadgeOut(code=b.code, name=b.name, description=b.description) for b in new_badges],
+    )

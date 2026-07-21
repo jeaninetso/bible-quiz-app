@@ -15,7 +15,11 @@ function groupByTestament(books: Book[]) {
   };
 }
 
-export function BookLibrary() {
+interface BookLibraryProps {
+  onQuizSubmitted?: () => void;
+}
+
+export function BookLibrary({ onQuizSubmitted }: BookLibraryProps) {
   const [state, setState] = useState<LoadState>({ status: 'loading' });
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
@@ -59,7 +63,7 @@ export function BookLibrary() {
           ))}
         </div>
       </div>
-      {selectedBook && <QuizView book={selectedBook} />}
+      {selectedBook && <QuizView book={selectedBook} onSubmitted={onQuizSubmitted} />}
     </div>
   );
 }

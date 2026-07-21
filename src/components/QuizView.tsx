@@ -10,6 +10,7 @@ type SubmitState = { status: 'idle' } | { status: 'submitting' } | { status: 'er
 
 interface QuizViewProps {
   book: Book;
+  onSubmitted?: () => void;
 }
 
 function optionClassName(questionIndex: number, optionIndex: number, selections: Record<number, number>, result: QuizResult | null) {
@@ -22,7 +23,7 @@ function optionClassName(questionIndex: number, optionIndex: number, selections:
   return 'quiz-view__option quiz-view__option--disabled';
 }
 
-export function QuizView({ book }: QuizViewProps) {
+export function QuizView({ book, onSubmitted }: QuizViewProps) {
   const [state, setState] = useState<LoadState>({ status: 'loading' });
   // Selection only until submitted — picking an answer doesn't reveal
   // correctness or send anything to the server until "Submit Quiz".
@@ -74,6 +75,7 @@ export function QuizView({ book }: QuizViewProps) {
       .then((data) => {
         setResult(validateQuizResult(data));
         setSubmitState({ status: 'idle' });
+        onSubmitted?.();
       })
       .catch((err: unknown) => {
         setSubmitState({ status: 'error', message: err instanceof Error ? err.message : 'Failed to submit quiz' });
@@ -84,9 +86,23 @@ export function QuizView({ book }: QuizViewProps) {
     <div className="quiz-view">
       <div className="quiz-view__reference">{book.name} Quiz</div>
       {result && (
-        <p className="quiz-view__score" role="status">
-          You scored {result.score} out of {result.totalQuestions}.
-        </p>
+        <div className="quiz-view__result-banner" role="status">
+          <p className="quiz-view__score">
+            You scored {result.score} out of {result.totalQuestions} — +{result.xpEarned} XP
+          </p>
+          <p className="quiz-view__streak">
+            Level {result.progress.level} · {result.progress.currentStreak}-day streak
+          </p>
+          {result.newBadges.length > 0 && (
+            <ul className="quiz-view__new-badges">
+              {result.newBadges.map((b) => (
+                <li key={b.code} className="quiz-view__new-badge" title={b.description}>
+                  New badge: {b.name}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       )}
       <ol className="quiz-view__questions">
         {quiz.questions.map((q, questionIndex) => (

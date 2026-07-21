@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
 
@@ -72,8 +74,42 @@ class QuestionResultOut(CamelModel):
     is_correct: bool
 
 
+class BadgeOut(CamelModel):
+    code: str
+    name: str
+    description: str
+
+
+class UserBookProgressOut(CamelModel):
+    xp: int
+    level: int
+    current_streak: int
+    longest_streak: int
+    best_score: int
+    quizzes_completed: int
+
+
 class QuizResultOut(CamelModel):
     id: int
     score: int
     total_questions: int
     questions: list[QuestionResultOut]
+    xp_earned: int
+    progress: UserBookProgressOut
+    new_badges: list[BadgeOut]
+
+
+class EarnedBadgeOut(CamelModel):
+    code: str
+    name: str
+    description: str
+    earned_at: datetime
+
+
+class MeStatsOut(CamelModel):
+    total_xp: int
+    level: int
+    current_streak: int
+    longest_streak: int
+    quizzes_completed: int
+    badges: list[EarnedBadgeOut]

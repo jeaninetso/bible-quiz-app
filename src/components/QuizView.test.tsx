@@ -40,6 +40,9 @@ const RESULT_RESPONSE = {
       isCorrect: false,
     },
   ],
+  xpEarned: 30,
+  progress: { xp: 30, level: 1, currentStreak: 1, longestStreak: 1, bestScore: 1, quizzesCompleted: 1 },
+  newBadges: [{ code: 'first_quiz', name: 'First Steps', description: 'Complete your first quiz' }],
 };
 
 function stubQuizAndSubmitFetch() {
@@ -122,8 +125,26 @@ describe('QuizView', () => {
     await user.click(screen.getByRole('button', { name: /submit quiz/i }));
 
     expect(await screen.findByText(/you scored 1 out of 2/i)).toBeInTheDocument();
+    expect(screen.getByText(/\+30 xp/i)).toBeInTheDocument();
+    expect(screen.getByText(/level 1/i)).toBeInTheDocument();
+    expect(screen.getByText(/1-day streak/i)).toBeInTheDocument();
+    expect(screen.getByText(/new badge: first steps/i)).toBeInTheDocument();
     expect(screen.getByText(/naomi was ruth’s mother-in-law/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Naomi' })).toBeDisabled();
+  });
+
+  it('calls onSubmitted after a successful submission', async () => {
+    stubQuizAndSubmitFetch();
+    const onSubmitted = vi.fn();
+    const user = userEvent.setup();
+    render(<QuizView book={RUTH} onSubmitted={onSubmitted} />);
+
+    await user.click(await screen.findByRole('button', { name: 'Naomi' }));
+    await user.click(screen.getByRole('button', { name: 'Edomite' }));
+    await user.click(screen.getByRole('button', { name: /submit quiz/i }));
+
+    await screen.findByText(/you scored 1 out of 2/i);
+    expect(onSubmitted).toHaveBeenCalledTimes(1);
   });
 
   it('shows an error and keeps the quiz answerable when submission fails', async () => {

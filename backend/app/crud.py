@@ -87,3 +87,64 @@ def submit_quiz_attempt(
     db.commit()
     db.refresh(attempt)
     return attempt
+
+
+def get_or_create_progress(db: Session, user_id: int, book_id: int) -> models.UserBookProgress:
+    progress = (
+        db.query(models.UserBookProgress)
+        .filter(models.UserBookProgress.user_id == user_id, models.UserBookProgress.book_id == book_id)
+        .first()
+    )
+    if progress is None:
+        progress = models.UserBookProgress(user_id=user_id, book_id=book_id)
+        db.add(progress)
+        db.commit()
+        db.refresh(progress)
+    return progress
+
+
+def save_progress(db: Session, progress: models.UserBookProgress) -> None:
+    db.commit()
+    db.refresh(progress)
+
+
+def list_user_progress(db: Session, user_id: int) -> list[models.UserBookProgress]:
+    return db.query(models.UserBookProgress).filter(models.UserBookProgress.user_id == user_id).all()
+
+
+def sum_quizzes_completed(db: Session, user_id: int) -> int:
+    return sum(p.quizzes_completed for p in list_user_progress(db, user_id))
+
+
+def list_badges(db: Session) -> list[models.Badge]:
+    return db.query(models.Badge).all()
+
+
+def get_badges_by_codes(db: Session, codes: list[str]) -> list[models.Badge]:
+    if not codes:
+        return []
+    return db.query(models.Badge).filter(models.Badge.code.in_(codes)).all()
+
+
+def list_earned_badges(db: Session, user_id: int) -> list[models.UserBadge]:
+    return db.query(models.UserBadge).filter(models.UserBadge.user_id == user_id).all()
+
+
+def earned_badge_codes(db: Session, user_id: int) -> set[str]:
+    rows = (
+        db.query(models.Badge.code)
+        .join(models.UserBadge, models.UserBadge.badge_id == models.Badge.id)
+        .filter(models.UserBadge.user_id == user_id)
+        .all()
+    )
+    return {code for (code,) in rows}
+
+
+def award_badges(db: Session, user_id: int, badge_codes: list[str]) -> list[models.Badge]:
+    if not badge_codes:
+        return []
+    badges = get_badges_by_codes(db, badge_codes)
+    for badge in badges:
+        db.add(models.UserBadge(user_id=user_id, badge_id=badge.id))
+    db.commit()
+    return badges

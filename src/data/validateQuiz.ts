@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { QuizAttempt, QuizResult } from '../types/quiz';
+import type { QuizAttempt, QuizResult, MeStats } from '../types/quiz';
 
 const questionSchema = z.object({
   question: z.string(),
@@ -32,13 +32,48 @@ const questionResultSchema = z.object({
   isCorrect: z.boolean(),
 });
 
+const badgeSchema = z.object({
+  code: z.string(),
+  name: z.string(),
+  description: z.string(),
+});
+
+const earnedBadgeSchema = badgeSchema.extend({
+  earnedAt: z.string(),
+});
+
+const progressSchema = z.object({
+  xp: z.number(),
+  level: z.number(),
+  currentStreak: z.number(),
+  longestStreak: z.number(),
+  bestScore: z.number(),
+  quizzesCompleted: z.number(),
+});
+
 const quizResultSchema = z.object({
   id: z.number(),
   score: z.number(),
   totalQuestions: z.number(),
   questions: z.array(questionResultSchema),
+  xpEarned: z.number(),
+  progress: progressSchema,
+  newBadges: z.array(badgeSchema),
 });
 
 export function validateQuizResult(data: unknown): QuizResult {
   return quizResultSchema.parse(data);
+}
+
+const meStatsSchema = z.object({
+  totalXp: z.number(),
+  level: z.number(),
+  currentStreak: z.number(),
+  longestStreak: z.number(),
+  quizzesCompleted: z.number(),
+  badges: z.array(earnedBadgeSchema),
+});
+
+export function validateMeStats(data: unknown): MeStats {
+  return meStatsSchema.parse(data);
 }

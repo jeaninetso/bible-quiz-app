@@ -1,9 +1,13 @@
+from datetime import datetime
+
 import pytest
 
 from app import crud
 from app.auth import hash_password
 from app.routers import quiz as quiz_router
+from app.routers import quiz_attempts as quiz_attempts_router
 from app.services.claude_quiz import FunFact, QuizGenerationResult, QuizQuestion
+from scripts.seed_badges import build_badges
 from scripts.seed_books import build_books
 
 
@@ -17,6 +21,12 @@ def logged_in_client(client, db_session):
 @pytest.fixture()
 def seeded_books(db_session):
     db_session.add_all(build_books())
+    db_session.commit()
+
+
+@pytest.fixture()
+def seeded_badges(db_session):
+    db_session.add_all(build_badges())
     db_session.commit()
 
 
@@ -118,3 +128,94 @@ def test_submit_persists_score_and_completed_status(logged_in_client, db_session
     assert attempt.score == 5
     assert attempt.answers_json == [0, 1, 2, 3, 0]
     assert attempt.submitted_at is not None
+
+
+def _create_attempt(client, book_id) -> int:
+    return client.post(f"/books/{book_id}/quiz").json()["id"]
+
+
+def test_submit_response_includes_xp_progress_and_new_badges(
+    monkeypatch, logged_in_client, db_session, seeded_books, seeded_badges
+):
+    monkeypatch.setattr(quiz_router, "fetch_passage", lambda db, book: "In the days when the judges ruled...")
+    monkeypatch.setattr(quiz_router, "generate_quiz", lambda passage_text, reference: _fake_quiz())
+    monkeypatch.setattr(quiz_attempts_router, "utcnow", lambda: datetime(2026, 1, 10))
+
+    ruth_book = next(b for b in crud.list_books(db_session) if b.code == "Ruth")
+    attempt_id = _create_attempt(logged_in_client, ruth_book.id)
+
+    response = logged_in_client.post(f"/quiz-attempts/{attempt_id}/submit", json={"answers": [0, 1, 2, 3, 0]})
+    assert response.status_code == 200
+    body = response.json()
+
+    assert body["xpEarned"] == 20 + 5 * 10  # completion bonus + 5 correct answers
+    progress = body["progress"]
+    assert progress == {
+        "xp": 70,
+        "level": 1,
+        "currentStreak": 1,
+        "longestStreak": 1,
+        "bestScore": 5,
+        "quizzesCompleted": 1,
+    }
+    assert {b["code"] for b in body["newBadges"]} == {"first_quiz", "perfect_score"}
+    assert all({"code", "name", "description"} <= set(b.keys()) for b in body["newBadges"])
+
+
+def test_submit_does_not_reaward_badges_already_earned(
+    monkeypatch, logged_in_client, db_session, seeded_books, seeded_badges
+):
+    monkeypatch.setattr(quiz_router, "fetch_passage", lambda db, book: "In the days when the judges ruled...")
+    monkeypatch.setattr(quiz_router, "generate_quiz", lambda passage_text, reference: _fake_quiz())
+    monkeypatch.setattr(quiz_attempts_router, "utcnow", lambda: datetime(2026, 1, 10))
+
+    ruth_book = next(b for b in crud.list_books(db_session) if b.code == "Ruth")
+
+    first_id = _create_attempt(logged_in_client, ruth_book.id)
+    logged_in_client.post(f"/quiz-attempts/{first_id}/submit", json={"answers": [0, 1, 2, 3, 0]})
+
+    second_id = _create_attempt(logged_in_client, ruth_book.id)
+    response = logged_in_client.post(f"/quiz-attempts/{second_id}/submit", json={"answers": [0, 1, 2, 3, 0]})
+
+    assert response.json()["newBadges"] == []
+
+
+def test_submit_builds_streak_across_consecutive_days_and_awards_streak_badge(
+    monkeypatch, logged_in_client, db_session, seeded_books, seeded_badges
+):
+    monkeypatch.setattr(quiz_router, "fetch_passage", lambda db, book: "In the days when the judges ruled...")
+    monkeypatch.setattr(quiz_router, "generate_quiz", lambda passage_text, reference: _fake_quiz())
+
+    ruth_book = next(b for b in crud.list_books(db_session) if b.code == "Ruth")
+
+    body = None
+    for day in (10, 11, 12):
+        monkeypatch.setattr(quiz_attempts_router, "utcnow", lambda day=day: datetime(2026, 1, day))
+        attempt_id = _create_attempt(logged_in_client, ruth_book.id)
+        response = logged_in_client.post(f"/quiz-attempts/{attempt_id}/submit", json={"answers": [0, 1, 2, 3, 0]})
+        body = response.json()
+
+    assert body["progress"]["currentStreak"] == 3
+    assert body["progress"]["quizzesCompleted"] == 3
+    assert "streak_3" in {b["code"] for b in body["newBadges"]}
+
+
+def test_submit_persists_user_book_progress_row(monkeypatch, logged_in_client, db_session, seeded_books, seeded_badges):
+    monkeypatch.setattr(quiz_router, "fetch_passage", lambda db, book: "In the days when the judges ruled...")
+    monkeypatch.setattr(quiz_router, "generate_quiz", lambda passage_text, reference: _fake_quiz())
+    monkeypatch.setattr(quiz_attempts_router, "utcnow", lambda: datetime(2026, 1, 10))
+
+    ruth_book = next(b for b in crud.list_books(db_session) if b.code == "Ruth")
+    attempt_id = _create_attempt(logged_in_client, ruth_book.id)
+    logged_in_client.post(f"/quiz-attempts/{attempt_id}/submit", json={"answers": [0, 1, 2, 3, 0]})
+
+    from app import models
+
+    progress = (
+        db_session.query(models.UserBookProgress)
+        .filter(models.UserBookProgress.book_id == ruth_book.id)
+        .first()
+    )
+    assert progress is not None
+    assert progress.xp == 70
+    assert progress.last_quiz_date == datetime(2026, 1, 10).date()

@@ -87,11 +87,42 @@
   font-style: italic;
 }
 
+.quiz-view__result-banner {
+  margin: 0 0 18px;
+  padding: 14px 16px;
+  border-radius: 8px;
+  background: var(--accent-soft);
+}
+
 .quiz-view__score {
   font-size: 15px;
   font-weight: 600;
-  margin: 0 0 18px;
+  margin: 0;
   color: var(--accent-strong);
+}
+
+.quiz-view__streak {
+  font-size: 13px;
+  margin: 4px 0 0;
+  color: var(--text-muted);
+}
+
+.quiz-view__new-badges {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.quiz-view__new-badge {
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--gold-soft);
+  color: var(--gold);
 }
 
 .quiz-view__submit {

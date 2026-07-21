@@ -1,11 +1,14 @@
+import { useState } from 'react';
 import { BookLibrary } from './components/BookLibrary';
 import { LoginForm } from './components/LoginForm';
 import { ProtectedHome } from './components/ProtectedHome';
+import { StatsBar } from './components/StatsBar';
 import { useAuth } from './lib/useAuth';
 import './App.css';
 
 function App() {
   const auth = useAuth();
+  const [statsRefreshKey, setStatsRefreshKey] = useState(0);
 
   return (
     <main className="app">
@@ -20,7 +23,8 @@ function App() {
       {auth.status === 'authenticated' && (
         <>
           <ProtectedHome user={auth.user} onLogout={auth.logout} />
-          <BookLibrary />
+          <StatsBar refreshKey={statsRefreshKey} />
+          <BookLibrary onQuizSubmitted={() => setStatsRefreshKey((k) => k + 1)} />
         </>
       )}
     </main>

@@ -1,8 +1,8 @@
-"""SQLAlchemy models. UserBookProgress/Badge arrive in Phase 7."""
+"""SQLAlchemy models."""
 
-from datetime import datetime
+from datetime import date, datetime
 
-from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint, func
+from sqlalchemy import JSON, Boolean, Date, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database import Base
@@ -75,3 +75,48 @@ class QuizAttempt(Base):
     answers_json: Mapped[list | None] = mapped_column(JSON, nullable=True)
     score: Mapped[int | None] = mapped_column(Integer, nullable=True)
     submitted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
+
+class UserBookProgress(Base):
+    """Per-user, per-book gamification stats — updated once per submitted
+    quiz attempt (see app/services/gamification.py). Kept per-book rather
+    than a single row per user so future books each track their own streak
+    and mastery, the same way UserBookProgress is scoped in the plan."""
+
+    __tablename__ = "user_book_progress"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    book_id: Mapped[int] = mapped_column(ForeignKey("books.id"), nullable=False)
+    xp: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    level: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
+    current_streak: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    longest_streak: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    best_score: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    quizzes_completed: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    last_quiz_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+
+    __table_args__ = (UniqueConstraint("user_id", "book_id"),)
+
+
+class Badge(Base):
+    """Static catalog seeded once by scripts/seed_badges.py — see BADGES in
+    that file for the current set and their earning criteria."""
+
+    __tablename__ = "badges"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    code: Mapped[str] = mapped_column(String, unique=True, nullable=False)
+    name: Mapped[str] = mapped_column(String, nullable=False)
+    description: Mapped[str] = mapped_column(String, nullable=False)
+
+
+class UserBadge(Base):
+    __tablename__ = "user_badges"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    badge_id: Mapped[int] = mapped_column(ForeignKey("badges.id"), nullable=False)
+    earned_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+    __table_args__ = (UniqueConstraint("user_id", "badge_id"),)

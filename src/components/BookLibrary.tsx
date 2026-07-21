@@ -3,7 +3,7 @@ import { fetchJson } from '../lib/api';
 import { validateBooks } from '../data/validateBooks';
 import type { Book } from '../types/book';
 import { BookCard } from './BookCard';
-import { PassagePreview } from './PassagePreview';
+import { QuizView } from './QuizView';
 import './BookLibrary.css';
 
 type LoadState = { status: 'loading' } | { status: 'error'; message: string } | { status: 'loaded'; books: Book[] };
@@ -59,7 +59,7 @@ export function BookLibrary() {
           ))}
         </div>
       </div>
-      {selectedBook && <PassagePreview book={selectedBook} />}
+      {selectedBook && <QuizView book={selectedBook} />}
     </div>
   );
 }

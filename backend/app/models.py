@@ -1,9 +1,8 @@
-"""SQLAlchemy models. UserBookProgress/QuizAttempt/Badge arrive in
-Phases 6 and 7."""
+"""SQLAlchemy models. UserBookProgress/Badge arrive in Phases 6 and 7."""
 
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint, func
+from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database import Base
@@ -54,3 +53,21 @@ class PassageCache(Base):
     expires_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
 
     __table_args__ = (UniqueConstraint("book_id", "reference"),)
+
+
+class QuizAttempt(Base):
+    """The full answer key (questions_json) is persisted here and never sent
+    to the client until after submission — see QuestionOut in schemas.py,
+    which deliberately omits correct_index/explanation. Scoring (Phase 6)
+    reads questions_json server-side to grade the client's submitted answers."""
+
+    __tablename__ = "quiz_attempts"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    book_id: Mapped[int] = mapped_column(ForeignKey("books.id"), nullable=False)
+    chapter_reference: Mapped[str] = mapped_column(String, nullable=False)
+    status: Mapped[str] = mapped_column(String, default="in_progress", nullable=False)
+    questions_json: Mapped[list] = mapped_column(JSON, nullable=False)
+    fun_facts_json: Mapped[list] = mapped_column(JSON, nullable=False)
+    started_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())

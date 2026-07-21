@@ -50,3 +50,24 @@ def upsert_passage_cache(db: Session, book_id: int, reference: str, esv_text: st
         db.commit()
     db.add(models.PassageCache(book_id=book_id, reference=reference, esv_text=esv_text, expires_at=expires_at))
     db.commit()
+
+
+def create_quiz_attempt(
+    db: Session,
+    user_id: int,
+    book_id: int,
+    chapter_reference: str,
+    questions_json: list[dict],
+    fun_facts_json: list[dict],
+) -> models.QuizAttempt:
+    attempt = models.QuizAttempt(
+        user_id=user_id,
+        book_id=book_id,
+        chapter_reference=chapter_reference,
+        questions_json=questions_json,
+        fun_facts_json=fun_facts_json,
+    )
+    db.add(attempt)
+    db.commit()
+    db.refresh(attempt)
+    return attempt

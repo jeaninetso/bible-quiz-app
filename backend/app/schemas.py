@@ -31,3 +31,25 @@ class BookOut(CamelModel):
 class PassageOut(CamelModel):
     reference: str
     text: str
+
+
+class QuestionOut(CamelModel):
+    """Client-safe view of a quiz question — correct_index/explanation are
+    deliberately omitted so the answer key never reaches the browser until
+    after submission (see QuizAttempt.questions_json)."""
+
+    question: str
+    options: list[str]
+
+
+class FunFactOut(CamelModel):
+    fact: str
+
+
+class QuizAttemptOut(CamelModel):
+    id: int
+    book_id: int
+    book_name: str
+    chapter_reference: str
+    questions: list[QuestionOut]
+    fun_facts: list[FunFactOut]

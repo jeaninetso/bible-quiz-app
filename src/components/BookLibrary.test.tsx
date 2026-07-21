@@ -10,13 +10,22 @@ const BOOKS: Book[] = [
   { id: 40, code: 'Matt', name: 'Matthew', testament: 'new', chapterCount: 28, isAvailable: false },
 ];
 
+const QUIZ_RESPONSE = {
+  id: 1,
+  bookId: 8,
+  bookName: 'Ruth',
+  chapterReference: 'Ruth',
+  questions: [{ question: 'Who was Ruth’s mother-in-law?', options: ['Naomi', 'Orpah', 'Rachel', 'Leah'] }],
+  funFacts: [{ fact: 'Ruth is an ancestor of King David.' }],
+};
+
 function stubBooksFetch(books: Book[]) {
   vi.stubGlobal(
     'fetch',
     vi.fn((input: RequestInfo | URL) => {
       const url = String(input);
-      if (url.includes('/passage')) {
-        return Promise.resolve(new Response(JSON.stringify({ reference: 'Ruth', text: 'In the days...' }), { status: 200 }));
+      if (url.includes('/quiz')) {
+        return Promise.resolve(new Response(JSON.stringify(QUIZ_RESPONSE), { status: 200 }));
       }
       return Promise.resolve(new Response(JSON.stringify(books), { status: 200 }));
     }),
@@ -38,12 +47,12 @@ describe('BookLibrary', () => {
     expect(screen.getByRole('button', { name: /ruth/i })).toBeEnabled();
   });
 
-  it('shows a passage preview when an available book is picked', async () => {
+  it('shows a generated quiz when an available book is picked', async () => {
     stubBooksFetch(BOOKS);
     const user = userEvent.setup();
     render(<BookLibrary />);
 
     await user.click(await screen.findByRole('button', { name: /ruth/i }));
-    expect(await screen.findByText(/in the days/i)).toBeInTheDocument();
+    expect(await screen.findByText(/who was ruth’s mother-in-law/i)).toBeInTheDocument();
   });
 });

@@ -51,22 +51,72 @@ export function QuizFlow({ onSubmitted }: QuizFlowProps) {
     };
   }, [bookId]);
 
-  if (booksState.status === 'loaded') {
-    const book = booksState.books.find((b) => String(b.id) === bookId);
-    if (!book || !book.isAvailable) {
-      return <Navigate to="/" replace />;
-    }
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
+
+  const book = booksState.status === 'loaded' ? booksState.books.find((b) => String(b.id) === bookId) : undefined;
+  if (booksState.status === 'loaded' && (!book || !book.isAvailable)) {
+    return <Navigate to="/" replace />;
   }
+
+  const exitButton = (
+    <button type="button" className="btn btn-ghost quiz-flow__exit" onClick={() => setShowExitConfirm(true)}>
+      Exit Quiz
+    </button>
+  );
+
+  const exitModal = showExitConfirm && (
+    <div className="quiz-flow__modal-overlay" role="presentation" onClick={() => setShowExitConfirm(false)}>
+      <div
+        className="quiz-flow__modal"
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="exit-quiz-title"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <p id="exit-quiz-title" className="quiz-flow__modal-title">
+          Exit this quiz?
+        </p>
+        <p className="quiz-flow__modal-body">Your progress on this attempt won't be saved.</p>
+        <div className="quiz-flow__modal-actions">
+          <button type="button" className="btn btn-ghost" onClick={() => setShowExitConfirm(false)}>
+            Keep Going
+          </button>
+          <button type="button" className="btn btn-primary" onClick={() => navigate('/')}>
+            Exit Quiz
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 
   if (state.status !== 'loaded') {
     return (
       <div className="quiz-flow">
-        {state.status === 'loading' && <p role="status">Generating your quiz…</p>}
+        <div className="quiz-flow__header">
+          <div className="quiz-flow__reference">{book ? `${book.name} Quiz` : ''}</div>
+          {exitButton}
+        </div>
+        {state.status === 'loading' && (
+          <div className="quiz-flow__loading" role="status">
+            <span className="quiz-flow__loading-icon" aria-hidden="true">
+              📖
+            </span>
+            <p className="quiz-flow__loading-text">
+              Generating your quiz
+              <span className="quiz-flow__loading-dots" aria-hidden="true">
+                <span />
+                <span />
+                <span />
+              </span>
+            </p>
+          </div>
+        )}
         {state.status === 'error' && (
           <p role="alert" className="quiz-flow__error">
             Couldn't load the quiz: {state.message}
           </p>
         )}
+        {exitModal}
       </div>
     );
   }
@@ -99,7 +149,10 @@ export function QuizFlow({ onSubmitted }: QuizFlowProps) {
   if (stage === 'answering') {
     return (
       <div className="quiz-flow">
-        <div className="quiz-flow__reference">{quiz.bookName} Quiz</div>
+        <div className="quiz-flow__header">
+          <div className="quiz-flow__reference">{quiz.bookName} Quiz</div>
+          {exitButton}
+        </div>
         <div className="quiz-flow__progress">
           <div className="quiz-flow__dots">
             {quiz.questions.map((_, i) => (
@@ -170,6 +223,7 @@ export function QuizFlow({ onSubmitted }: QuizFlowProps) {
             Couldn't submit the quiz: {submitState.message}
           </p>
         )}
+        {exitModal}
       </div>
     );
   }
@@ -181,6 +235,10 @@ export function QuizFlow({ onSubmitted }: QuizFlowProps) {
   if (stage === 'review') {
     return (
       <div className="quiz-flow">
+        <div className="quiz-flow__header">
+          <div className="quiz-flow__reference">{quiz.bookName} Quiz</div>
+          {exitButton}
+        </div>
         <div className="quiz-flow__review-top-actions">
           <button type="button" className="btn btn-ghost" onClick={() => setStage('summary')}>
             ← Back to Results
@@ -194,12 +252,17 @@ export function QuizFlow({ onSubmitted }: QuizFlowProps) {
             <QuizQuestionReview key={i} result={q} />
           ))}
         </ol>
+        {exitModal}
       </div>
     );
   }
 
   return (
     <div className="quiz-flow">
+      <div className="quiz-flow__header">
+        <div className="quiz-flow__reference">{quiz.bookName} Quiz</div>
+        {exitButton}
+      </div>
       <div className={'quiz-flow__summary-banner' + (passed ? ' quiz-flow__summary-banner--pass' : ' quiz-flow__summary-banner--fail')}>
         <p className="quiz-flow__summary-score">
           {finalResult.score} / {finalResult.totalQuestions}
@@ -229,6 +292,7 @@ export function QuizFlow({ onSubmitted }: QuizFlowProps) {
           </ul>
         </div>
       )}
+      {exitModal}
     </div>
   );
 }

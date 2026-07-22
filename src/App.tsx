@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { AchievementScreen } from './components/AchievementScreen';
 import { BookLibrary } from './components/BookLibrary';
 import { LoginForm } from './components/LoginForm';
@@ -11,6 +11,25 @@ import { useAuth } from './lib/useAuth';
 import './App.css';
 
 type Tab = 'library' | 'history';
+
+function HeroText() {
+  return (
+    <>
+      <h1 className="app__title">Grow your Bible knowledge, one book at a time.</h1>
+      <p className="app__subtitle">
+        Pick a book, take a fresh quiz, learn something new — and watch your streak grow.
+      </p>
+    </>
+  );
+}
+
+// Hidden mid-quiz (/quiz/:bookId and its achievements screen) — the marketing
+// copy is just noise once you're actually answering questions.
+function Hero() {
+  const location = useLocation();
+  if (location.pathname.startsWith('/quiz/')) return null;
+  return <HeroText />;
+}
 
 interface LibraryHomeProps {
   statsRefreshKey: number;
@@ -69,15 +88,13 @@ function App() {
   return (
     <main className="app">
       <div className="app__eyebrow">Scripture Quest</div>
-      <h1 className="app__title">Grow your Bible knowledge, one book at a time.</h1>
-      <p className="app__subtitle">
-        Pick a book, take a fresh quiz, learn something new — and watch your streak grow.
-      </p>
+      {auth.status !== 'authenticated' && <HeroText />}
 
       {auth.status === 'loading' && <p role="status">Loading…</p>}
       {auth.status === 'anonymous' && <LoginForm onLogin={auth.login} />}
       {auth.status === 'authenticated' && (
         <BrowserRouter>
+          <Hero />
           <ProtectedHome user={auth.user} onLogout={auth.logout} />
 
           <Routes>

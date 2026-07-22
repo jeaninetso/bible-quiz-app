@@ -33,11 +33,11 @@ def test_fetch_passage_calls_esv_api_and_caches(monkeypatch, db_session, ruth):
 
     text = esv_client.fetch_passage(db_session, ruth)
     assert "In the days" in text
-    assert calls == ["Ruth"]
+    assert calls == ["Ruth 1-4"]
 
     # Second call within the TTL should hit the cache, not the API again.
     esv_client.fetch_passage(db_session, ruth)
-    assert calls == ["Ruth"]
+    assert calls == ["Ruth 1-4"]
 
 
 def test_fetch_passage_raises_without_api_key(monkeypatch, db_session, ruth):
@@ -54,7 +54,9 @@ def test_fetch_passage_raises_on_non_200(monkeypatch, db_session, ruth):
 
 
 def test_expired_cache_entry_is_refetched(monkeypatch, db_session, ruth):
-    crud.upsert_passage_cache(db_session, ruth.id, "Ruth", "stale text", expires_at=utcnow() - timedelta(minutes=1))
+    crud.upsert_passage_cache(
+        db_session, ruth.id, "Ruth 1-4", "stale text", expires_at=utcnow() - timedelta(minutes=1)
+    )
     monkeypatch.setattr(esv_client, "ESV_API_KEY", "fake-key")
     monkeypatch.setattr(esv_client.httpx, "get", lambda *a, **k: _fake_esv_response("fresh text"))
 

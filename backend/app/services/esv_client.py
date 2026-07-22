@@ -5,8 +5,13 @@ from its own training data (accuracy + copyright).
 
 Caching is short-TTL (see PassageCache) per the ESV API's terms, which cap
 cached/displayed text at 500 verses or half a book (whichever is less) and
-encourage clearing cached text periodically. Ruth is ~85 verses, comfortably
-under that cap — re-check before caching a long book."""
+encourage clearing cached text periodically. The API enforces this half-book
+cap itself on any single contiguous range request — confirmed live, it isn't
+just a caching guideline — so a `reference` passed in here must already name
+a range that fits (see the quiz-section plan for how sections are chosen).
+Never pass a bare book name: the ESV API silently resolves an unqualified
+book name to chapter 1 only, which is NOT "the whole book" and previously
+caused every Ruth quiz to be generated from chapter 1 alone."""
 
 from datetime import timedelta
 
@@ -56,9 +61,11 @@ def _fetch_from_esv_api(reference: str) -> str:
 
 
 def fetch_passage(db: Session, book: models.Book, reference: str | None = None) -> str:
-    """Returns ESV text for `reference` (defaults to the whole book), using
-    the short-TTL cache when available."""
-    reference = reference or book.name
+    """Returns ESV text for `reference` (defaults to the whole book, as an
+    explicit chapter range — never just `book.name`, since the ESV API
+    silently treats a bare book name as "chapter 1 only"), using the
+    short-TTL cache when available."""
+    reference = reference or f"{book.name} 1-{book.chapter_count}"
 
     cached = crud.get_cached_passage(db, book.id, reference)
     if cached is not None:

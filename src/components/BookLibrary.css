@@ -49,11 +49,6 @@
   border-color: var(--accent);
 }
 
-.book-card--selected {
-  border-color: var(--accent);
-  background: var(--accent-soft);
-}
-
 .book-card--locked {
   opacity: 0.55;
   cursor: default;

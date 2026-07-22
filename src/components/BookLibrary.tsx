@@ -1,12 +1,8 @@
-import { useEffect, useState } from 'react';
-import { fetchJson } from '../lib/api';
-import { validateBooks } from '../data/validateBooks';
+import { useNavigate } from 'react-router-dom';
+import { useBooks } from '../lib/useBooks';
 import type { Book } from '../types/book';
 import { BookCard } from './BookCard';
-import { QuizView } from './QuizView';
 import './BookLibrary.css';
-
-type LoadState = { status: 'loading' } | { status: 'error'; message: string } | { status: 'loaded'; books: Book[] };
 
 function groupByTestament(books: Book[]) {
   return {
@@ -15,21 +11,9 @@ function groupByTestament(books: Book[]) {
   };
 }
 
-interface BookLibraryProps {
-  onQuizSubmitted?: () => void;
-}
-
-export function BookLibrary({ onQuizSubmitted }: BookLibraryProps) {
-  const [state, setState] = useState<LoadState>({ status: 'loading' });
-  const [selectedId, setSelectedId] = useState<number | null>(null);
-
-  useEffect(() => {
-    fetchJson('/books')
-      .then((data) => setState({ status: 'loaded', books: validateBooks(data) }))
-      .catch((err: unknown) => {
-        setState({ status: 'error', message: err instanceof Error ? err.message : 'Failed to load books' });
-      });
-  }, []);
+export function BookLibrary() {
+  const state = useBooks();
+  const navigate = useNavigate();
 
   if (state.status === 'loading') {
     return <p role="status">Loading the library…</p>;
@@ -43,7 +27,6 @@ export function BookLibrary({ onQuizSubmitted }: BookLibraryProps) {
   }
 
   const { old, new: newTestament } = groupByTestament(state.books);
-  const selectedBook = state.books.find((b) => b.id === selectedId) ?? null;
 
   return (
     <div className="book-library">
@@ -51,7 +34,7 @@ export function BookLibrary({ onQuizSubmitted }: BookLibraryProps) {
         <div className="book-library__section-title">Old Testament</div>
         <div className="book-library__grid">
           {old.map((book) => (
-            <BookCard key={book.id} book={book} selected={book.id === selectedId} onSelect={(b) => setSelectedId(b.id)} />
+            <BookCard key={book.id} book={book} onSelect={(b) => navigate(`/quiz/${b.id}`)} />
           ))}
         </div>
       </div>
@@ -59,11 +42,10 @@ export function BookLibrary({ onQuizSubmitted }: BookLibraryProps) {
         <div className="book-library__section-title">New Testament</div>
         <div className="book-library__grid">
           {newTestament.map((book) => (
-            <BookCard key={book.id} book={book} selected={book.id === selectedId} onSelect={(b) => setSelectedId(b.id)} />
+            <BookCard key={book.id} book={book} onSelect={(b) => navigate(`/quiz/${b.id}`)} />
           ))}
         </div>
       </div>
-      {selectedBook && <QuizView book={selectedBook} onSubmitted={onQuizSubmitted} />}
     </div>
   );
 }

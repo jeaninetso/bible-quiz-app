@@ -39,8 +39,8 @@
 }
 
 .quiz-view__option--correct {
-  border-color: var(--gold);
-  background: var(--gold-soft);
+  border-color: var(--success);
+  background: var(--success-soft);
   font-weight: 600;
 }
 

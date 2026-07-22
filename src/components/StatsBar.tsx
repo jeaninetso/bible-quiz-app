@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { fetchJson } from '../lib/api';
 import { validateMeStats } from '../data/validateQuiz';
 import type { MeStats } from '../types/quiz';
+import { badgeEmoji } from '../lib/badgeEmoji';
 import './StatsBar.css';
 
 type LoadState = { status: 'loading' } | { status: 'error'; message: string } | { status: 'loaded'; stats: MeStats };
@@ -57,6 +58,7 @@ export function StatsBar({ refreshKey }: StatsBarProps) {
         <div className="stats-bar__badges">
           {stats.badges.map((b) => (
             <span key={b.code} className="stats-bar__badge" title={b.description}>
+              <span aria-hidden="true">{badgeEmoji(b.code)}</span>
               {b.name}
             </span>
           ))}

@@ -1,0 +1,114 @@
+.quiz-flow {
+  margin-top: 18px;
+  padding: 20px 22px;
+  border-radius: 8px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+.quiz-flow__reference {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom: 14px;
+  color: var(--accent-strong);
+}
+
+.quiz-flow__error {
+  color: var(--danger);
+  font-size: 14px;
+}
+
+.quiz-flow__progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.quiz-flow__dots {
+  display: flex;
+  gap: 6px;
+}
+
+.quiz-flow__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border-strong);
+}
+
+.quiz-flow__dot--current {
+  background: var(--pop);
+}
+
+.quiz-flow__dot--done {
+  background: var(--success);
+}
+
+.quiz-flow__progress-label {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  margin-left: auto;
+}
+
+/* .quiz-view__option base styles live in QuizQuestionReview.css, shared with
+   the answering stage here — only the interactive (pre-submission) selection
+   state is specific to this file. */
+.quiz-view__option--selected {
+  border-color: var(--pop);
+  background: color-mix(in srgb, var(--pop) 12%, var(--surface-1));
+  font-weight: 700;
+}
+
+.quiz-flow__nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.quiz-flow__summary-banner {
+  border-radius: 12px;
+  padding: 24px 20px;
+  margin-bottom: 20px;
+  color: white;
+}
+
+.quiz-flow__summary-banner--pass {
+  background: var(--success);
+}
+
+.quiz-flow__summary-banner--fail {
+  background: var(--danger);
+}
+
+.quiz-flow__summary-score {
+  font-family: var(--font-heading);
+  font-size: 30px;
+  font-weight: 700;
+  margin: 0 0 4px;
+}
+
+.quiz-flow__summary-line {
+  font-size: 14.5px;
+  margin: 0;
+  opacity: 0.95;
+}
+
+.quiz-flow__summary-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.quiz-flow__review-top-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}

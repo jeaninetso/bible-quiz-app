@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter, Route, Routes, useParams } from 'react-router-dom';
 import { BookLibrary } from './BookLibrary';
 import type { Book } from '../types/book';
 
@@ -10,25 +11,23 @@ const BOOKS: Book[] = [
   { id: 40, code: 'Matt', name: 'Matthew', testament: 'new', chapterCount: 28, isAvailable: false },
 ];
 
-const QUIZ_RESPONSE = {
-  id: 1,
-  bookId: 8,
-  bookName: 'Ruth',
-  chapterReference: 'Ruth',
-  questions: [{ question: 'Who was Ruth’s mother-in-law?', options: ['Naomi', 'Orpah', 'Rachel', 'Leah'] }],
-  funFacts: [{ fact: 'Ruth is an ancestor of King David.' }],
-};
-
 function stubBooksFetch(books: Book[]) {
-  vi.stubGlobal(
-    'fetch',
-    vi.fn((input: RequestInfo | URL) => {
-      const url = String(input);
-      if (url.includes('/quiz')) {
-        return Promise.resolve(new Response(JSON.stringify(QUIZ_RESPONSE), { status: 200 }));
-      }
-      return Promise.resolve(new Response(JSON.stringify(books), { status: 200 }));
-    }),
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify(books), { status: 200 })));
+}
+
+function QuizRouteStub() {
+  const { bookId } = useParams<{ bookId: string }>();
+  return <p>Quiz route for book {bookId}</p>;
+}
+
+function renderWithRouter() {
+  render(
+    <MemoryRouter initialEntries={['/']}>
+      <Routes>
+        <Route path="/" element={<BookLibrary />} />
+        <Route path="/quiz/:bookId" element={<QuizRouteStub />} />
+      </Routes>
+    </MemoryRouter>,
   );
 }
 
@@ -39,7 +38,7 @@ describe('BookLibrary', () => {
 
   it('groups books by testament and marks only available ones as clickable', async () => {
     stubBooksFetch(BOOKS);
-    render(<BookLibrary />);
+    renderWithRouter();
 
     expect(await screen.findByText('Ruth')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /genesis/i })).toBeDisabled();
@@ -47,12 +46,12 @@ describe('BookLibrary', () => {
     expect(screen.getByRole('button', { name: /ruth/i })).toBeEnabled();
   });
 
-  it('shows a generated quiz when an available book is picked', async () => {
+  it('navigates to the quiz route when an available book is picked', async () => {
     stubBooksFetch(BOOKS);
     const user = userEvent.setup();
-    render(<BookLibrary />);
+    renderWithRouter();
 
     await user.click(await screen.findByRole('button', { name: /ruth/i }));
-    expect(await screen.findByText(/who was ruth’s mother-in-law/i)).toBeInTheDocument();
+    expect(await screen.findByText(/quiz route for book 8/i)).toBeInTheDocument();
   });
 });

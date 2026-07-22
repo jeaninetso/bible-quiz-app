@@ -1,34 +1,47 @@
+@font-face {
+  font-family: 'National Park';
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+  src: url('./assets/fonts/national-park-variable.woff2') format('woff2');
+}
+
 :root {
   /* Surfaces */
-  --bg: #f6f7fa;
+  --bg: #eefbfe;
   --surface-1: #ffffff;
-  --surface-2: #eef0f5;
-  --border: #dfe2e9;
-  --border-strong: #c9cedb;
+  --surface-2: #fcdefc;
+  --border: #9aa9f4;
+  --border-strong: #4763eb;
 
   /* Ink */
-  --text: #1c2130;
-  --text-muted: #626b7a;
-  --text-faint: #656d7e;
+  --text: #0a185c;
+  --text-muted: #132daf;
+  --text-faint: #1737d3;
 
-  /* Accent — "quest" indigo, primary interactive color */
-  --accent: #32408a;
-  --accent-soft: #eceffb;
-  --accent-strong: #232f70;
+  /* Accent — "quest" wisteria blue, primary interactive/structural color */
+  --accent: #1532c1;
+  --accent-soft: #dae0fb;
+  --accent-strong: #0d1f77;
 
   /* Gold — reserved for gamification (XP, badges, streaks), never the base accent */
-  --gold: #8a6110;
-  --gold-soft: #f7edd8;
+  --gold: #940580;
+  --gold-soft: #fcdefc;
+  --gold-bright: #fca6f0;
+  --ink-on-gold: #0a185c;
+
+  /* Pop — primary CTA color (Next/Submit/Continue buttons), distinct from --accent */
+  --pop: #8c4be1;
 
   /* Semantic */
-  --success: #2f7d4f;
-  --success-soft: #e5f3ea;
-  --danger: #9c3b46;
-  --danger-soft: #f9e9ea;
+  --success: #0a7d59;
+  --success-soft: #d0fbee;
+  --danger: #d81c66;
+  --danger-soft: #fadbe7;
 
-  --shadow: rgba(28, 33, 48, 0.08) 0 6px 16px -4px, rgba(28, 33, 48, 0.05) 0 2px 6px -1px;
+  --shadow: rgba(10, 24, 92, 0.14) 0 6px 16px -4px, rgba(10, 24, 92, 0.08) 0 2px 6px -1px;
 
-  --font-heading: 'Spectral', Georgia, serif;
+  --font-heading: 'National Park', ui-rounded, system-ui, sans-serif;
   --font-body: 'Inter', system-ui, 'Segoe UI', Roboto, sans-serif;
   --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 
@@ -44,82 +57,90 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #12151b;
-    --surface-1: #1a1e27;
-    --surface-2: #20242f;
-    --border: #2b303c;
-    --border-strong: #3a4050;
+    --bg: #060d33;
+    --surface-1: #081349;
+    --surface-2: #0b1960;
+    --border: #102693;
+    --border-strong: #1736cf;
 
-    --text: #e7e9ee;
-    --text-muted: #9aa3b2;
-    --text-faint: #838b9b;
+    --text: #ebf2f4;
+    --text-muted: #afcdd4;
+    --text-faint: #8fb4bd;
 
-    --accent: #8b9bf5;
-    --accent-soft: #232a4d;
-    --accent-strong: #b1bbf9;
+    --accent: #8c9df2;
+    --accent-soft: #0c1d6e;
+    --accent-strong: #c8d0f9;
 
-    --gold: #d9ac53;
-    --gold-soft: #362c17;
+    --gold: #f721d9;
+    --gold-soft: #630355;
 
-    --success: #5cb885;
-    --success-soft: #17301f;
-    --danger: #e2929c;
-    --danger-soft: #3a2226;
+    --success: #0a7d59;
+    --success-soft: #064c36;
+    --danger: #d81c66;
+    --danger-soft: #510b26;
+
+    --pop: #8c4be1;
 
     --shadow: rgba(0, 0, 0, 0.4) 0 6px 16px -4px, rgba(0, 0, 0, 0.25) 0 2px 6px -1px;
   }
 }
 
 :root[data-theme='dark'] {
-  --bg: #12151b;
-  --surface-1: #1a1e27;
-  --surface-2: #20242f;
-  --border: #2b303c;
-  --border-strong: #3a4050;
+  --bg: #060d33;
+  --surface-1: #081349;
+  --surface-2: #0b1960;
+  --border: #102693;
+  --border-strong: #1736cf;
 
-  --text: #e7e9ee;
-  --text-muted: #9aa3b2;
-  --text-faint: #838b9b;
+  --text: #ebf2f4;
+  --text-muted: #afcdd4;
+  --text-faint: #8fb4bd;
 
-  --accent: #8b9bf5;
-  --accent-soft: #232a4d;
-  --accent-strong: #b1bbf9;
+  --accent: #8c9df2;
+  --accent-soft: #0c1d6e;
+  --accent-strong: #c8d0f9;
 
-  --gold: #d9ac53;
-  --gold-soft: #362c17;
+  --gold: #f721d9;
+  --gold-soft: #630355;
 
-  --success: #5cb885;
-  --success-soft: #17301f;
-  --danger: #e2929c;
-  --danger-soft: #3a2226;
+  --success: #0a7d59;
+  --success-soft: #064c36;
+  --danger: #d81c66;
+  --danger-soft: #510b26;
+
+  --pop: #8c4be1;
 
   --shadow: rgba(0, 0, 0, 0.4) 0 6px 16px -4px, rgba(0, 0, 0, 0.25) 0 2px 6px -1px;
 }
 
 :root[data-theme='light'] {
-  --bg: #f6f7fa;
+  --bg: #eefbfe;
   --surface-1: #ffffff;
-  --surface-2: #eef0f5;
-  --border: #dfe2e9;
-  --border-strong: #c9cedb;
+  --surface-2: #fcdefc;
+  --border: #9aa9f4;
+  --border-strong: #4763eb;
 
-  --text: #1c2130;
-  --text-muted: #626b7a;
-  --text-faint: #656d7e;
+  --text: #0a185c;
+  --text-muted: #132daf;
+  --text-faint: #1737d3;
 
-  --accent: #32408a;
-  --accent-soft: #eceffb;
-  --accent-strong: #232f70;
+  --accent: #1532c1;
+  --accent-soft: #dae0fb;
+  --accent-strong: #0d1f77;
 
-  --gold: #8a6110;
-  --gold-soft: #f7edd8;
+  --gold: #940580;
+  --gold-soft: #fcdefc;
+  --gold-bright: #fca6f0;
+  --ink-on-gold: #0a185c;
 
-  --success: #2f7d4f;
-  --success-soft: #e5f3ea;
-  --danger: #9c3b46;
-  --danger-soft: #f9e9ea;
+  --success: #0a7d59;
+  --success-soft: #d0fbee;
+  --danger: #d81c66;
+  --danger-soft: #fadbe7;
 
-  --shadow: rgba(28, 33, 48, 0.08) 0 6px 16px -4px, rgba(28, 33, 48, 0.05) 0 2px 6px -1px;
+  --pop: #8c4be1;
+
+  --shadow: rgba(10, 24, 92, 0.14) 0 6px 16px -4px, rgba(10, 24, 92, 0.08) 0 2px 6px -1px;
 }
 
 * {
@@ -176,4 +197,36 @@ input:focus-visible,
 [tabindex]:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+/* Shared button styles — .btn-primary is the primary-action color (Next,
+   Submit, Continue); .btn-ghost is the low-emphasis secondary action. */
+.btn {
+  font: inherit;
+  font-weight: 700;
+  font-size: 14.5px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.btn-primary {
+  background: var(--pop);
+  color: white;
+}
+
+.btn-ghost {
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+}
+
+.btn-ghost:hover {
+  border-color: var(--pop);
 }

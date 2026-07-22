@@ -2,27 +2,16 @@ import type { Book } from '../types/book';
 
 interface BookCardProps {
   book: Book;
-  selected: boolean;
   onSelect: (book: Book) => void;
 }
 
-export function BookCard({ book, selected, onSelect }: BookCardProps) {
-  const classes = [
-    'book-card',
-    book.isAvailable ? 'book-card--available' : 'book-card--locked',
-    selected ? 'book-card--selected' : '',
-  ]
+export function BookCard({ book, onSelect }: BookCardProps) {
+  const classes = ['book-card', book.isAvailable ? 'book-card--available' : 'book-card--locked']
     .filter(Boolean)
     .join(' ');
 
   return (
-    <button
-      type="button"
-      className={classes}
-      disabled={!book.isAvailable}
-      aria-pressed={selected}
-      onClick={() => onSelect(book)}
-    >
+    <button type="button" className={classes} disabled={!book.isAvailable} onClick={() => onSelect(book)}>
       <span className="book-card__name">{book.name}</span>
       <span className="book-card__meta">
         {book.chapterCount} {book.chapterCount === 1 ? 'chapter' : 'chapters'}

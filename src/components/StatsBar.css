@@ -42,11 +42,14 @@
 
 .stats-bar__badge {
   font-size: 12px;
-  font-weight: 600;
-  padding: 4px 10px;
+  font-weight: 700;
+  padding: 4px 10px 4px 6px;
   border-radius: 999px;
-  background: var(--gold-soft);
-  color: var(--gold);
+  background: var(--gold-bright);
+  color: var(--ink-on-gold);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .stats-bar__error {

@@ -1,4 +1,5 @@
 import type { Book } from '../types/book';
+import { characterArt } from '../lib/characterArt';
 
 interface BookCardProps {
   book: Book;
@@ -9,9 +10,11 @@ export function BookCard({ book, onSelect }: BookCardProps) {
   const classes = ['book-card', book.isAvailable ? 'book-card--available' : 'book-card--locked']
     .filter(Boolean)
     .join(' ');
+  const art = characterArt(book.code);
 
   return (
     <button type="button" className={classes} disabled={!book.isAvailable} onClick={() => onSelect(book)}>
+      {art && <img className="book-card__portrait" src={art} alt="" />}
       <span className="book-card__name">{book.name}</span>
       <span className="book-card__meta">
         {book.chapterCount} {book.chapterCount === 1 ? 'chapter' : 'chapters'}

@@ -4,14 +4,36 @@ import userEvent from '@testing-library/user-event';
 import { QuizHistory } from './QuizHistory';
 
 const HISTORY_RESPONSE = [
-  { id: 2, bookId: 8, bookName: 'Ruth', chapterReference: 'Ruth', score: 3, totalQuestions: 5, submittedAt: '2026-01-11T00:00:00' },
-  { id: 1, bookId: 8, bookName: 'Ruth', chapterReference: 'Ruth', score: 5, totalQuestions: 5, submittedAt: '2026-01-10T00:00:00' },
+  {
+    id: 2,
+    bookId: 8,
+    bookName: 'Ruth',
+    sectionId: 201,
+    sectionName: 'Ruth 1–2',
+    chapterReference: 'Ruth 1-2',
+    score: 3,
+    totalQuestions: 5,
+    submittedAt: '2026-01-11T00:00:00',
+  },
+  {
+    id: 1,
+    bookId: 8,
+    bookName: 'Ruth',
+    sectionId: null,
+    sectionName: null,
+    chapterReference: 'Ruth',
+    score: 5,
+    totalQuestions: 5,
+    submittedAt: '2026-01-10T00:00:00',
+  },
 ];
 
 const REVIEW_RESPONSE = {
   id: 2,
   bookName: 'Ruth',
-  chapterReference: 'Ruth',
+  sectionId: 201,
+  sectionName: 'Ruth 1–2',
+  chapterReference: 'Ruth 1-2',
   score: 3,
   totalQuestions: 5,
   submittedAt: '2026-01-11T00:00:00',
@@ -52,7 +74,9 @@ describe('QuizHistory', () => {
     const items = await screen.findAllByRole('button', { expanded: false });
     expect(items).toHaveLength(2);
     expect(items[0]).toHaveTextContent('3 / 5');
+    expect(items[0]).toHaveTextContent('Ruth 1–2');
     expect(items[1]).toHaveTextContent('5 / 5');
+    expect(items[1]).toHaveTextContent('Ruth');
   });
 
   it('shows an empty state when there is no history yet', async () => {

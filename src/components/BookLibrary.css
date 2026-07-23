@@ -25,6 +25,10 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 10px;
+  /* Without this, a tall multi-section card stretches every shorter card
+     sharing its row to match its height (grid's default align-items:
+     stretch) — start lets each card size to its own content. */
+  align-items: start;
 }
 
 .book-card {
@@ -84,4 +88,47 @@
 .book-card__badge--locked {
   background: var(--surface-2);
   color: var(--text-faint);
+}
+
+.book-card--multi {
+  grid-column: span 2;
+  cursor: default;
+}
+
+.book-card__sections {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.book-card__section-pill {
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.book-card__section-pill--available {
+  cursor: pointer;
+  border-color: var(--accent);
+}
+
+.book-card__section-pill--available:hover {
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface-2));
+}
+
+.book-card__section-pill--locked {
+  opacity: 0.55;
+  cursor: default;
+}
+
+@media (max-width: 400px) {
+  .book-card--multi {
+    grid-column: span 1;
+  }
 }

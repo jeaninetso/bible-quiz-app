@@ -1,11 +1,12 @@
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import type { QuizResult } from '../types/quiz';
 import { useBooks } from '../lib/useBooks';
+import { findSectionWithBook } from '../lib/findSectionWithBook';
 import { badgeEmoji } from '../lib/badgeEmoji';
 import './AchievementScreen.css';
 
 export function AchievementScreen() {
-  const { bookId } = useParams<{ bookId: string }>();
+  const { sectionId } = useParams<{ sectionId: string }>();
   const location = useLocation();
   const navigate = useNavigate();
   const booksState = useBooks();
@@ -17,11 +18,12 @@ export function AchievementScreen() {
     return <Navigate to="/" replace />;
   }
 
-  const book = booksState.status === 'loaded' ? booksState.books.find((b) => String(b.id) === bookId) : undefined;
+  const match = booksState.status === 'loaded' ? findSectionWithBook(booksState.books, sectionId) : undefined;
+  const title = match ? `${match.book.name} — ${match.section.name} Quiz Complete` : 'Quiz Complete';
 
   return (
     <div className="achieve">
-      <p className="achieve__result">{book ? `${book.name} Quiz Complete` : 'Quiz Complete'}</p>
+      <p className="achieve__result">{title}</p>
 
       {result.newBadges.length > 0 ? (
         <div className="achieve__badges">

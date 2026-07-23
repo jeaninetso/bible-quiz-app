@@ -6,6 +6,7 @@ from app.routers import quiz as quiz_router
 from app.services.claude_quiz import ClaudeQuizError, FunFact, QuizGenerationResult, QuizQuestion
 from app.services.esv_client import EsvApiError
 from scripts.seed_books import build_books
+from scripts.seed_sections import build_sections
 
 
 @pytest.fixture()
@@ -19,6 +20,19 @@ def logged_in_client(client, db_session):
 def seeded_books(db_session):
     db_session.add_all(build_books())
     db_session.commit()
+
+
+@pytest.fixture()
+def seeded_sections(db_session, seeded_books):
+    db_session.add_all(build_sections(db_session))
+    db_session.commit()
+
+
+@pytest.fixture()
+def ruth_section_id(db_session, seeded_sections):
+    ruth = next(b for b in crud.list_books(db_session) if b.code == "Ruth")
+    section = crud.list_sections_for_book(db_session, ruth.id)[0]
+    return section.id
 
 
 def _fake_quiz():
@@ -37,20 +51,20 @@ def _fake_quiz():
 
 
 def test_quiz_requires_authentication(client):
-    response = client.post("/books/1/quiz")
+    response = client.post("/sections/1/quiz")
     assert response.status_code == 401
 
 
-def test_quiz_generates_and_strips_answer_key(monkeypatch, logged_in_client, db_session, seeded_books):
-    monkeypatch.setattr(quiz_router, "fetch_passage", lambda db, book: "In the days when the judges ruled...")
+def test_quiz_generates_and_strips_answer_key(monkeypatch, logged_in_client, ruth_section_id):
+    monkeypatch.setattr(quiz_router, "fetch_passage", lambda db, book, reference: "In the days when the judges ruled...")
     monkeypatch.setattr(quiz_router, "generate_quiz", lambda passage_text, reference: _fake_quiz())
 
-    ruth_book = next(b for b in crud.list_books(db_session) if b.code == "Ruth")
-    response = logged_in_client.post(f"/books/{ruth_book.id}/quiz")
+    response = logged_in_client.post(f"/sections/{ruth_section_id}/quiz")
     assert response.status_code == 200
 
     body = response.json()
     assert body["bookName"] == "Ruth"
+    assert body["sectionName"] == "Ruth 1–2"
     assert len(body["questions"]) == 5
     assert len(body["funFacts"]) == 2
     for question in body["questions"]:
@@ -58,52 +72,57 @@ def test_quiz_generates_and_strips_answer_key(monkeypatch, logged_in_client, db_
         assert len(question["options"]) == 4
 
 
-def test_quiz_persists_full_answer_key_server_side(monkeypatch, logged_in_client, db_session, seeded_books):
-    monkeypatch.setattr(quiz_router, "fetch_passage", lambda db, book: "In the days when the judges ruled...")
+def test_quiz_persists_full_answer_key_server_side(monkeypatch, logged_in_client, db_session, ruth_section_id):
+    monkeypatch.setattr(quiz_router, "fetch_passage", lambda db, book, reference: "In the days when the judges ruled...")
     monkeypatch.setattr(quiz_router, "generate_quiz", lambda passage_text, reference: _fake_quiz())
 
-    ruth_book = next(b for b in crud.list_books(db_session) if b.code == "Ruth")
-    response = logged_in_client.post(f"/books/{ruth_book.id}/quiz")
+    response = logged_in_client.post(f"/sections/{ruth_section_id}/quiz")
     attempt_id = response.json()["id"]
 
     from app import models
 
     attempt = db_session.get(models.QuizAttempt, attempt_id)
     assert attempt is not None
+    assert attempt.section_id == ruth_section_id
+    assert attempt.chapter_reference == "Ruth 1-2"
     assert attempt.questions_json[0]["correct_index"] in range(4)
     assert attempt.questions_json[0]["explanation"] == "Explanation 0."
 
 
-def test_quiz_404s_for_unavailable_book(logged_in_client, db_session, seeded_books):
-    genesis = next(b for b in crud.list_books(db_session) if b.code == "Gen")
-    response = logged_in_client.post(f"/books/{genesis.id}/quiz")
+def test_quiz_404s_for_unavailable_section(logged_in_client, db_session, seeded_sections):
+    from app import models
+
+    ruth = next(b for b in crud.list_books(db_session) if b.code == "Ruth")
+    section = crud.list_sections_for_book(db_session, ruth.id)[0]
+    section.is_available = False
+    db_session.commit()
+
+    response = logged_in_client.post(f"/sections/{section.id}/quiz")
     assert response.status_code == 404
 
 
-def test_quiz_404s_for_unknown_book(logged_in_client, seeded_books):
-    response = logged_in_client.post("/books/99999/quiz")
+def test_quiz_404s_for_unknown_section(logged_in_client, seeded_sections):
+    response = logged_in_client.post("/sections/99999/quiz")
     assert response.status_code == 404
 
 
-def test_quiz_502s_on_esv_api_error(monkeypatch, logged_in_client, db_session, seeded_books):
-    def raise_error(db, book):
+def test_quiz_502s_on_esv_api_error(monkeypatch, logged_in_client, ruth_section_id):
+    def raise_error(db, book, reference):
         raise EsvApiError("ESV API returned 401: bad token")
 
     monkeypatch.setattr(quiz_router, "fetch_passage", raise_error)
 
-    ruth_book = next(b for b in crud.list_books(db_session) if b.code == "Ruth")
-    response = logged_in_client.post(f"/books/{ruth_book.id}/quiz")
+    response = logged_in_client.post(f"/sections/{ruth_section_id}/quiz")
     assert response.status_code == 502
 
 
-def test_quiz_502s_on_claude_error(monkeypatch, logged_in_client, db_session, seeded_books):
-    monkeypatch.setattr(quiz_router, "fetch_passage", lambda db, book: "In the days when the judges ruled...")
+def test_quiz_502s_on_claude_error(monkeypatch, logged_in_client, ruth_section_id):
+    monkeypatch.setattr(quiz_router, "fetch_passage", lambda db, book, reference: "In the days when the judges ruled...")
 
     def raise_error(passage_text, reference):
         raise ClaudeQuizError("Claude repeatedly produced invalid quiz output: malformed")
 
     monkeypatch.setattr(quiz_router, "generate_quiz", raise_error)
 
-    ruth_book = next(b for b in crud.list_books(db_session) if b.code == "Ruth")
-    response = logged_in_client.post(f"/books/{ruth_book.id}/quiz")
+    response = logged_in_client.post(f"/sections/{ruth_section_id}/quiz")
     assert response.status_code == 502

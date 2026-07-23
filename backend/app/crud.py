@@ -33,6 +33,43 @@ def get_book(db: Session, book_id: int) -> models.Book | None:
     return db.get(models.Book, book_id)
 
 
+def list_sections_for_book(db: Session, book_id: int) -> list[models.Section]:
+    return (
+        db.query(models.Section)
+        .filter(models.Section.book_id == book_id)
+        .order_by(models.Section.order_index)
+        .all()
+    )
+
+
+def list_sections_for_books(db: Session, book_ids: list[int]) -> dict[int, list[models.Section]]:
+    """Batched version of list_sections_for_book — one query for GET /books
+    instead of one per book."""
+    by_book: dict[int, list[models.Section]] = {book_id: [] for book_id in book_ids}
+    if not book_ids:
+        return by_book
+    sections = (
+        db.query(models.Section)
+        .filter(models.Section.book_id.in_(book_ids))
+        .order_by(models.Section.book_id, models.Section.order_index)
+        .all()
+    )
+    for section in sections:
+        by_book[section.book_id].append(section)
+    return by_book
+
+
+def get_section(db: Session, section_id: int) -> models.Section | None:
+    return db.get(models.Section, section_id)
+
+
+def get_sections_by_ids(db: Session, section_ids: list[int]) -> dict[int, models.Section]:
+    ids = [sid for sid in section_ids if sid is not None]
+    if not ids:
+        return {}
+    return {s.id: s for s in db.query(models.Section).filter(models.Section.id.in_(ids)).all()}
+
+
 def get_cached_passage(db: Session, book_id: int, reference: str) -> models.PassageCache | None:
     cached = (
         db.query(models.PassageCache)
@@ -66,10 +103,12 @@ def create_quiz_attempt(
     chapter_reference: str,
     questions_json: list[dict],
     fun_facts_json: list[dict],
+    section_id: int | None = None,
 ) -> models.QuizAttempt:
     attempt = models.QuizAttempt(
         user_id=user_id,
         book_id=book_id,
+        section_id=section_id,
         chapter_reference=chapter_reference,
         questions_json=questions_json,
         fun_facts_json=fun_facts_json,

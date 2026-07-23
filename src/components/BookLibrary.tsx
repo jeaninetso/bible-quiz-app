@@ -34,7 +34,7 @@ export function BookLibrary() {
         <div className="book-library__section-title">Old Testament</div>
         <div className="book-library__grid">
           {old.map((book) => (
-            <BookCard key={book.id} book={book} onSelect={(b) => navigate(`/quiz/${b.id}`)} />
+            <BookCard key={book.id} book={book} onSelectSection={(sectionId) => navigate(`/quiz/${sectionId}`)} />
           ))}
         </div>
       </div>
@@ -42,7 +42,7 @@ export function BookLibrary() {
         <div className="book-library__section-title">New Testament</div>
         <div className="book-library__grid">
           {newTestament.map((book) => (
-            <BookCard key={book.id} book={book} onSelect={(b) => navigate(`/quiz/${b.id}`)} />
+            <BookCard key={book.id} book={book} onSelectSection={(sectionId) => navigate(`/quiz/${sectionId}`)} />
           ))}
         </div>
       </div>

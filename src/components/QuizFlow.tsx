@@ -4,6 +4,7 @@ import { postJson } from '../lib/api';
 import { validateQuizAttempt, validateQuizResult } from '../data/validateQuiz';
 import type { QuizAttempt, QuizResult } from '../types/quiz';
 import { useBooks } from '../lib/useBooks';
+import { findSectionWithBook } from '../lib/findSectionWithBook';
 import { QuizQuestionReview } from './QuizQuestionReview';
 import './QuizFlow.css';
 
@@ -16,7 +17,7 @@ interface QuizFlowProps {
 }
 
 export function QuizFlow({ onSubmitted }: QuizFlowProps) {
-  const { bookId } = useParams<{ bookId: string }>();
+  const { sectionId } = useParams<{ sectionId: string }>();
   const navigate = useNavigate();
   const booksState = useBooks();
 
@@ -37,7 +38,7 @@ export function QuizFlow({ onSubmitted }: QuizFlowProps) {
     setStage('answering');
     setResult(null);
     setSubmitState({ status: 'idle' });
-    postJson(`/books/${bookId}/quiz`, {})
+    postJson(`/sections/${sectionId}/quiz`, {})
       .then((data) => {
         if (!cancelled) setState({ status: 'loaded', quiz: validateQuizAttempt(data) });
       })
@@ -49,12 +50,12 @@ export function QuizFlow({ onSubmitted }: QuizFlowProps) {
     return () => {
       cancelled = true;
     };
-  }, [bookId]);
+  }, [sectionId]);
 
   const [showExitConfirm, setShowExitConfirm] = useState(false);
 
-  const book = booksState.status === 'loaded' ? booksState.books.find((b) => String(b.id) === bookId) : undefined;
-  if (booksState.status === 'loaded' && (!book || !book.isAvailable)) {
+  const match = booksState.status === 'loaded' ? findSectionWithBook(booksState.books, sectionId) : undefined;
+  if (booksState.status === 'loaded' && (!match || !match.section.isAvailable)) {
     return <Navigate to="/" replace />;
   }
 
@@ -93,7 +94,7 @@ export function QuizFlow({ onSubmitted }: QuizFlowProps) {
     return (
       <div className="quiz-flow">
         <div className="quiz-flow__header">
-          <div className="quiz-flow__reference">{book ? `${book.name} Quiz` : ''}</div>
+          <div className="quiz-flow__reference">{match ? `${match.book.name} — ${match.section.name}` : ''}</div>
           {exitButton}
         </div>
         {state.status === 'loading' && (
@@ -122,6 +123,7 @@ export function QuizFlow({ onSubmitted }: QuizFlowProps) {
   }
 
   const quiz = state.quiz;
+  const quizTitle = quiz.sectionName ? `${quiz.bookName} — ${quiz.sectionName}` : quiz.bookName;
   const totalQuestions = quiz.questions.length;
   const question = quiz.questions[currentIndex];
   const isLastQuestion = currentIndex === totalQuestions - 1;
@@ -143,14 +145,14 @@ export function QuizFlow({ onSubmitted }: QuizFlowProps) {
 
   function handleContinue() {
     onSubmitted?.();
-    navigate(`/quiz/${bookId}/achievements`, { state: result });
+    navigate(`/quiz/${sectionId}/achievements`, { state: result });
   }
 
   if (stage === 'answering') {
     return (
       <div className="quiz-flow">
         <div className="quiz-flow__header">
-          <div className="quiz-flow__reference">{quiz.bookName} Quiz</div>
+          <div className="quiz-flow__reference">{quizTitle}</div>
           {exitButton}
         </div>
         <div className="quiz-flow__progress">
@@ -236,7 +238,7 @@ export function QuizFlow({ onSubmitted }: QuizFlowProps) {
     return (
       <div className="quiz-flow">
         <div className="quiz-flow__header">
-          <div className="quiz-flow__reference">{quiz.bookName} Quiz</div>
+          <div className="quiz-flow__reference">{quizTitle}</div>
           {exitButton}
         </div>
         <div className="quiz-flow__review-top-actions">
@@ -260,7 +262,7 @@ export function QuizFlow({ onSubmitted }: QuizFlowProps) {
   return (
     <div className="quiz-flow">
       <div className="quiz-flow__header">
-        <div className="quiz-flow__reference">{quiz.bookName} Quiz</div>
+        <div className="quiz-flow__reference">{quizTitle}</div>
         {exitButton}
       </div>
       <div className={'quiz-flow__summary-banner' + (passed ? ' quiz-flow__summary-banner--pass' : ' quiz-flow__summary-banner--fail')}>

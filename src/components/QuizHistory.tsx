@@ -65,7 +65,7 @@ export function QuizHistory() {
               aria-expanded={isExpanded}
               onClick={() => toggleExpanded(item.id)}
             >
-              <span className="quiz-history__book">{item.bookName}</span>
+              <span className="quiz-history__book">{item.sectionName ?? item.bookName}</span>
               <span className="quiz-history__score">
                 {item.score} / {item.totalQuestions}
               </span>

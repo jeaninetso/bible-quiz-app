@@ -21,6 +21,13 @@ class UserOut(CamelModel):
     username: str
 
 
+class SectionOut(CamelModel):
+    id: int
+    book_id: int
+    name: str
+    is_available: bool
+
+
 class BookOut(CamelModel):
     id: int
     code: str
@@ -28,11 +35,7 @@ class BookOut(CamelModel):
     testament: str
     chapter_count: int
     is_available: bool
-
-
-class PassageOut(CamelModel):
-    reference: str
-    text: str
+    sections: list[SectionOut] = []
 
 
 class QuestionOut(CamelModel):
@@ -52,6 +55,8 @@ class QuizAttemptOut(CamelModel):
     id: int
     book_id: int
     book_name: str
+    section_id: int | None = None
+    section_name: str | None = None
     chapter_reference: str
     questions: list[QuestionOut]
     fun_facts: list[FunFactOut]
@@ -119,6 +124,8 @@ class QuizHistoryItemOut(CamelModel):
     id: int
     book_id: int
     book_name: str
+    section_id: int | None = None
+    section_name: str | None = None
     chapter_reference: str
     score: int
     total_questions: int
@@ -132,6 +139,8 @@ class QuizReviewOut(CamelModel):
 
     id: int
     book_name: str
+    section_id: int | None = None
+    section_name: str | None = None
     chapter_reference: str
     score: int
     total_questions: int

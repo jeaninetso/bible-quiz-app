@@ -4,7 +4,17 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { AchievementScreen } from './AchievementScreen';
 
-const BOOKS = [{ id: 8, code: 'Ruth', name: 'Ruth', testament: 'old', chapterCount: 4, isAvailable: true }];
+const BOOKS = [
+  {
+    id: 8,
+    code: 'Ruth',
+    name: 'Ruth',
+    testament: 'old',
+    chapterCount: 4,
+    isAvailable: true,
+    sections: [{ id: 201, bookId: 8, name: 'Ruth 1–2', isAvailable: true }],
+  },
+];
 
 const BASE_RESULT = {
   id: 1,
@@ -22,10 +32,10 @@ function stubBooksFetch() {
 
 function renderAt(state: unknown) {
   render(
-    <MemoryRouter initialEntries={[{ pathname: '/quiz/8/achievements', state }]}>
+    <MemoryRouter initialEntries={[{ pathname: '/quiz/201/achievements', state }]}>
       <Routes>
         <Route path="/" element={<p>Library screen</p>} />
-        <Route path="/quiz/:bookId/achievements" element={<AchievementScreen />} />
+        <Route path="/quiz/:sectionId/achievements" element={<AchievementScreen />} />
       </Routes>
     </MemoryRouter>,
   );
@@ -43,7 +53,7 @@ describe('AchievementScreen', () => {
     expect(await screen.findByText('First Steps')).toBeInTheDocument();
     expect(screen.getByText('Complete your first quiz')).toBeInTheDocument();
     expect(screen.getByText('🌱')).toBeInTheDocument();
-    expect(screen.getByText(/ruth quiz complete/i)).toBeInTheDocument();
+    expect(screen.getByText(/ruth — ruth 1–2 quiz complete/i)).toBeInTheDocument();
   });
 
   it('shows an empty state when no new badge was earned', async () => {

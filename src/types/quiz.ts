@@ -11,6 +11,8 @@ export interface QuizAttempt {
   id: number;
   bookId: number;
   bookName: string;
+  sectionId: number | null;
+  sectionName: string | null;
   chapterReference: string;
   questions: Question[];
   funFacts: FunFact[];
@@ -67,6 +69,8 @@ export interface QuizHistoryItem {
   id: number;
   bookId: number;
   bookName: string;
+  sectionId: number | null;
+  sectionName: string | null;
   chapterReference: string;
   score: number;
   totalQuestions: number;
@@ -76,6 +80,8 @@ export interface QuizHistoryItem {
 export interface QuizReview {
   id: number;
   bookName: string;
+  sectionId: number | null;
+  sectionName: string | null;
   chapterReference: string;
   score: number;
   totalQuestions: number;

@@ -23,8 +23,8 @@ function HeroText() {
   );
 }
 
-// Hidden mid-quiz (/quiz/:bookId and its achievements screen) — the marketing
-// copy is just noise once you're actually answering questions.
+// Hidden mid-quiz (/quiz/:sectionId and its achievements screen) — the
+// marketing copy is just noise once you're actually answering questions.
 function Hero() {
   const location = useLocation();
   if (location.pathname.startsWith('/quiz/')) return null;
@@ -99,8 +99,8 @@ function App() {
 
           <Routes>
             <Route path="/" element={<LibraryHome statsRefreshKey={statsRefreshKey} />} />
-            <Route path="/quiz/:bookId" element={<QuizFlow onSubmitted={() => setStatsRefreshKey((k) => k + 1)} />} />
-            <Route path="/quiz/:bookId/achievements" element={<AchievementScreen />} />
+            <Route path="/quiz/:sectionId" element={<QuizFlow onSubmitted={() => setStatsRefreshKey((k) => k + 1)} />} />
+            <Route path="/quiz/:sectionId/achievements" element={<AchievementScreen />} />
           </Routes>
         </BrowserRouter>
       )}

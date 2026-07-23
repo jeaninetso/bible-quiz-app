@@ -9,6 +9,7 @@ from app.routers import quiz_attempts as quiz_attempts_router
 from app.services.claude_quiz import FunFact, QuizGenerationResult, QuizQuestion
 from scripts.seed_badges import build_badges
 from scripts.seed_books import build_books
+from scripts.seed_sections import build_sections
 
 
 @pytest.fixture()
@@ -21,6 +22,12 @@ def logged_in_client(client, db_session):
 @pytest.fixture()
 def seeded_books(db_session):
     db_session.add_all(build_books())
+    db_session.commit()
+
+
+@pytest.fixture()
+def seeded_sections(db_session, seeded_books):
+    db_session.add_all(build_sections(db_session))
     db_session.commit()
 
 
@@ -64,14 +71,15 @@ def test_stats_are_zero_before_any_quiz(logged_in_client):
 
 
 def test_stats_reflect_submitted_quizzes_and_earned_badges(
-    monkeypatch, logged_in_client, db_session, seeded_books, seeded_badges
+    monkeypatch, logged_in_client, db_session, seeded_sections, seeded_badges
 ):
-    monkeypatch.setattr(quiz_router, "fetch_passage", lambda db, book: "In the days when the judges ruled...")
+    monkeypatch.setattr(quiz_router, "fetch_passage", lambda db, book, reference: "In the days when the judges ruled...")
     monkeypatch.setattr(quiz_router, "generate_quiz", lambda passage_text, reference: _fake_quiz())
     monkeypatch.setattr(quiz_attempts_router, "utcnow", lambda: datetime(2026, 1, 10))
 
     ruth_book = next(b for b in crud.list_books(db_session) if b.code == "Ruth")
-    attempt_id = logged_in_client.post(f"/books/{ruth_book.id}/quiz").json()["id"]
+    ruth_section = crud.list_sections_for_book(db_session, ruth_book.id)[0]
+    attempt_id = logged_in_client.post(f"/sections/{ruth_section.id}/quiz").json()["id"]
     logged_in_client.post(f"/quiz-attempts/{attempt_id}/submit", json={"answers": [0, 1, 2, 3, 0]})
 
     response = logged_in_client.get("/me/stats")

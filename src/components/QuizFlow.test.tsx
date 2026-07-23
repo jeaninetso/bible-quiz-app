@@ -4,13 +4,25 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { QuizFlow } from './QuizFlow';
 
-const BOOKS = [{ id: 8, code: 'Ruth', name: 'Ruth', testament: 'old', chapterCount: 4, isAvailable: true }];
+const BOOKS = [
+  {
+    id: 8,
+    code: 'Ruth',
+    name: 'Ruth',
+    testament: 'old',
+    chapterCount: 4,
+    isAvailable: true,
+    sections: [{ id: 201, bookId: 8, name: 'Ruth 1–2', isAvailable: true }],
+  },
+];
 
 const QUIZ_RESPONSE = {
   id: 1,
   bookId: 8,
   bookName: 'Ruth',
-  chapterReference: 'Ruth',
+  sectionId: 201,
+  sectionName: 'Ruth 1–2',
+  chapterReference: 'Ruth 1-2',
   questions: [
     { question: 'Who was Ruth’s mother-in-law?', options: ['Naomi', 'Orpah', 'Rachel', 'Leah'] },
     { question: 'What was Ruth’s nationality?', options: ['Moabite', 'Edomite', 'Ammonite', 'Philistine'] },
@@ -75,10 +87,10 @@ function AchievementsRouteStub() {
 
 function renderQuizFlow(onSubmitted?: () => void) {
   render(
-    <MemoryRouter initialEntries={['/quiz/8']}>
+    <MemoryRouter initialEntries={['/quiz/201']}>
       <Routes>
-        <Route path="/quiz/:bookId" element={<QuizFlow onSubmitted={onSubmitted} />} />
-        <Route path="/quiz/:bookId/achievements" element={<AchievementsRouteStub />} />
+        <Route path="/quiz/:sectionId" element={<QuizFlow onSubmitted={onSubmitted} />} />
+        <Route path="/quiz/:sectionId/achievements" element={<AchievementsRouteStub />} />
       </Routes>
     </MemoryRouter>,
   );

@@ -32,11 +32,14 @@ def _build_question_results(
 def list_quiz_history(db: Session = Depends(get_db), current_user=Depends(auth.get_current_user)):
     attempts = crud.list_completed_quiz_attempts(db, current_user.id)
     books_by_id = {b.id: b for b in crud.list_books(db)}
+    sections_by_id = crud.get_sections_by_ids(db, [a.section_id for a in attempts])
     return [
         schemas.QuizHistoryItemOut(
             id=attempt.id,
             book_id=attempt.book_id,
             book_name=books_by_id[attempt.book_id].name if attempt.book_id in books_by_id else attempt.chapter_reference,
+            section_id=attempt.section_id,
+            section_name=sections_by_id[attempt.section_id].name if attempt.section_id in sections_by_id else None,
             chapter_reference=attempt.chapter_reference,
             score=attempt.score,
             total_questions=len(attempt.questions_json),
@@ -55,9 +58,12 @@ def get_quiz_review(attempt_id: int, db: Session = Depends(get_db), current_user
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="This quiz attempt hasn't been submitted yet")
 
     book = crud.get_book(db, attempt.book_id)
+    section = crud.get_section(db, attempt.section_id) if attempt.section_id is not None else None
     return schemas.QuizReviewOut(
         id=attempt.id,
         book_name=book.name if book else attempt.chapter_reference,
+        section_id=attempt.section_id,
+        section_name=section.name if section else None,
         chapter_reference=attempt.chapter_reference,
         score=attempt.score,
         total_questions=len(attempt.questions_json),

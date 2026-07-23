@@ -3,9 +3,12 @@ no Apocrypha). Chapter counts cross-checked against two independent sources;
 both testament subtotals (929 OT + 260 NT = 1,189) match the well-known
 aggregate, so the per-book numbers below are verified, not guessed.
 
-Only Ruth is `is_available=True` for the MVP — the rest show as "coming
-soon" in the hub. Re-runnable: clears existing rows first so you can reseed
-after model changes."""
+`is_available` is a hand-maintained "this book has usable content" flag —
+it does NOT gate quiz generation by itself (see scripts/seed_sections.py
+and Section's docstring in app/models.py: the actual quiz-generation gate is
+Section.is_available). Keep it in sync with whichever books have sections
+seeded. The rest show as "coming soon" in the hub. Re-runnable: clears
+existing rows first so you can reseed after model changes."""
 
 from app import models
 from app.database import Base, SessionLocal, engine
@@ -88,7 +91,7 @@ assert sum(c for _, _, c in _NEW_TESTAMENT) == 260
 assert len(_OLD_TESTAMENT) == 39
 assert len(_NEW_TESTAMENT) == 27
 
-AVAILABLE_BOOK_CODE = "Ruth"
+AVAILABLE_BOOK_CODES = {"Ruth", "Gen"}
 
 
 def build_books() -> list[models.Book]:
@@ -103,7 +106,7 @@ def build_books() -> list[models.Book]:
                     testament=testament,
                     chapter_count=chapter_count,
                     order_index=order_index,
-                    is_available=(code == AVAILABLE_BOOK_CODE),
+                    is_available=(code in AVAILABLE_BOOK_CODES),
                 )
             )
             order_index += 1

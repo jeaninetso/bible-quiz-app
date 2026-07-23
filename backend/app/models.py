@@ -37,6 +37,29 @@ class Book(Base):
     is_available: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
 
+class Section(Base):
+    """A quizzable chapter range within a Book. Exists because the ESV API
+    hard-caps any single contiguous range request at half a book's verses
+    (or 500, whichever is less) — no book can ever be fetched or quizzed on
+    whole, so every quiz target is a Section, never a Book directly.
+
+    Section-level progress/mastery badges were considered and deliberately
+    deferred — UserBookProgress stays book-scoped (see its docstring); add a
+    separate SectionProgress table later if per-section mastery is wanted."""
+
+    __tablename__ = "sections"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    book_id: Mapped[int] = mapped_column(ForeignKey("books.id"), nullable=False)
+    name: Mapped[str] = mapped_column(String, nullable=False)
+    # ESV API query string for this range, e.g. "Ruth 1-2" — kept separate
+    # from `name` even though they're identical today, in case a section is
+    # ever given a purely thematic display name distinct from its reference.
+    reference: Mapped[str] = mapped_column(String, nullable=False)
+    order_index: Mapped[int] = mapped_column(Integer, nullable=False)
+    is_available: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
+
 class PassageCache(Base):
     """Short-TTL cache of fetched ESV text only — never the Claude-generated
     quiz output, or retakes would stop being fresh. Kept short-lived (not a
@@ -66,6 +89,10 @@ class QuizAttempt(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     book_id: Mapped[int] = mapped_column(ForeignKey("books.id"), nullable=False)
+    # Nullable: attempts created before Section existed (all generated from
+    # chapter 1 only, under a since-fixed bug) have no section to point to,
+    # and there's no meaningful backfill target for them.
+    section_id: Mapped[int | None] = mapped_column(ForeignKey("sections.id"), nullable=True)
     chapter_reference: Mapped[str] = mapped_column(String, nullable=False)
     status: Mapped[str] = mapped_column(String, default="in_progress", nullable=False)
     questions_json: Mapped[list] = mapped_column(JSON, nullable=False)

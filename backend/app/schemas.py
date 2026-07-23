@@ -120,16 +120,30 @@ class MeStatsOut(CamelModel):
     badges: list[EarnedBadgeOut]
 
 
-class QuizHistoryItemOut(CamelModel):
+class QuizHistoryAttemptOut(CamelModel):
+    """One retake within a QuizHistoryGroupOut — enough to list and to open
+    into a full QuizReviewOut by id."""
+
     id: int
+    score: int
+    total_questions: int
+    submitted_at: datetime
+
+
+class QuizHistoryGroupOut(CamelModel):
+    """History is grouped by (book, section) so retaking the same section
+    doesn't produce N duplicate rows — `attempts` is newest-first, and the
+    group's own summary fields mirror its most recent attempt."""
+
     book_id: int
     book_name: str
     section_id: int | None = None
     section_name: str | None = None
-    chapter_reference: str
-    score: int
-    total_questions: int
-    submitted_at: datetime
+    attempt_count: int
+    most_recent_score: int
+    most_recent_total_questions: int
+    most_recent_submitted_at: datetime
+    attempts: list[QuizHistoryAttemptOut]
 
 
 class QuizReviewOut(CamelModel):

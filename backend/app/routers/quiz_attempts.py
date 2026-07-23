@@ -28,25 +28,52 @@ def _build_question_results(
     return results
 
 
-@router.get("", response_model=list[schemas.QuizHistoryItemOut])
+@router.get("", response_model=list[schemas.QuizHistoryGroupOut])
 def list_quiz_history(db: Session = Depends(get_db), current_user=Depends(auth.get_current_user)):
+    # Newest-first from crud — that ordering is reused below both to sort
+    # groups (by their most-recently-seen attempt) and to sort attempts
+    # within each group, with no extra sort step needed.
     attempts = crud.list_completed_quiz_attempts(db, current_user.id)
     books_by_id = {b.id: b for b in crud.list_books(db)}
     sections_by_id = crud.get_sections_by_ids(db, [a.section_id for a in attempts])
-    return [
-        schemas.QuizHistoryItemOut(
-            id=attempt.id,
-            book_id=attempt.book_id,
-            book_name=books_by_id[attempt.book_id].name if attempt.book_id in books_by_id else attempt.chapter_reference,
-            section_id=attempt.section_id,
-            section_name=sections_by_id[attempt.section_id].name if attempt.section_id in sections_by_id else None,
-            chapter_reference=attempt.chapter_reference,
-            score=attempt.score,
-            total_questions=len(attempt.questions_json),
-            submitted_at=attempt.submitted_at,
+
+    grouped: dict[tuple[int, int | None], list] = {}
+    group_order: list[tuple[int, int | None]] = []
+    for attempt in attempts:
+        key = (attempt.book_id, attempt.section_id)
+        if key not in grouped:
+            grouped[key] = []
+            group_order.append(key)
+        grouped[key].append(attempt)
+
+    result = []
+    for book_id, section_id in group_order:
+        group_attempts = grouped[(book_id, section_id)]
+        most_recent = group_attempts[0]
+        book = books_by_id.get(book_id)
+        section = sections_by_id.get(section_id) if section_id is not None else None
+        result.append(
+            schemas.QuizHistoryGroupOut(
+                book_id=book_id,
+                book_name=book.name if book else most_recent.chapter_reference,
+                section_id=section_id,
+                section_name=section.name if section else None,
+                attempt_count=len(group_attempts),
+                most_recent_score=most_recent.score,
+                most_recent_total_questions=len(most_recent.questions_json),
+                most_recent_submitted_at=most_recent.submitted_at,
+                attempts=[
+                    schemas.QuizHistoryAttemptOut(
+                        id=a.id,
+                        score=a.score,
+                        total_questions=len(a.questions_json),
+                        submitted_at=a.submitted_at,
+                    )
+                    for a in group_attempts
+                ],
+            )
         )
-        for attempt in attempts
-    ]
+    return result
 
 
 @router.get("/{attempt_id}", response_model=schemas.QuizReviewOut)

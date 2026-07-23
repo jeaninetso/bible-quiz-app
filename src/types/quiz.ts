@@ -65,16 +65,23 @@ export interface MeStats {
   badges: EarnedBadge[];
 }
 
-export interface QuizHistoryItem {
+export interface QuizHistoryAttempt {
   id: number;
+  score: number;
+  totalQuestions: number;
+  submittedAt: string;
+}
+
+export interface QuizHistoryGroup {
   bookId: number;
   bookName: string;
   sectionId: number | null;
   sectionName: string | null;
-  chapterReference: string;
-  score: number;
-  totalQuestions: number;
-  submittedAt: string;
+  attemptCount: number;
+  mostRecentScore: number;
+  mostRecentTotalQuestions: number;
+  mostRecentSubmittedAt: string;
+  attempts: QuizHistoryAttempt[];
 }
 
 export interface QuizReview {

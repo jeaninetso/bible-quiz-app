@@ -1,6 +1,9 @@
 .quiz-history {
   list-style: none;
-  margin: 0;
+  /* Matches .book-library's own margin-top — without this the first item
+     sits flush against the tab bar instead of matching the Books tab's
+     spacing. */
+  margin: 32px 0 0;
   padding: 0;
   display: flex;
   flex-direction: column;
@@ -46,9 +49,54 @@
   color: var(--text-faint);
 }
 
+.quiz-history__count {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-faint);
+  background: var(--surface-2);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
+.quiz-history__attempts {
+  list-style: none;
+  margin: 0;
+  padding: 0 16px 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+}
+
+.quiz-history__attempt {
+  border-bottom: 1px solid var(--border);
+}
+
+.quiz-history__attempt:last-child {
+  border-bottom: none;
+}
+
+.quiz-history__attempt-summary {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 4px;
+  font: inherit;
+  text-align: left;
+  border: none;
+  background: none;
+  color: var(--text);
+  cursor: pointer;
+}
+
 .quiz-history__review {
   padding: 0 16px 16px;
   border-top: 1px solid var(--border);
+}
+
+.quiz-history__attempt .quiz-history__review {
+  padding: 0 4px 12px;
+  border-top: none;
 }
 
 .quiz-history__error {

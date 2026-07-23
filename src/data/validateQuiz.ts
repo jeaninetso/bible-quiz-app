@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { QuizAttempt, QuizResult, MeStats, QuizHistoryItem, QuizReview } from '../types/quiz';
+import type { QuizAttempt, QuizResult, MeStats, QuizHistoryGroup, QuizReview } from '../types/quiz';
 
 const questionSchema = z.object({
   question: z.string(),
@@ -80,20 +80,27 @@ export function validateMeStats(data: unknown): MeStats {
   return meStatsSchema.parse(data);
 }
 
-const quizHistoryItemSchema = z.object({
+const quizHistoryAttemptSchema = z.object({
   id: z.number(),
-  bookId: z.number(),
-  bookName: z.string(),
-  sectionId: z.number().nullable(),
-  sectionName: z.string().nullable(),
-  chapterReference: z.string(),
   score: z.number(),
   totalQuestions: z.number(),
   submittedAt: z.string(),
 });
 
-export function validateQuizHistory(data: unknown): QuizHistoryItem[] {
-  return z.array(quizHistoryItemSchema).parse(data);
+const quizHistoryGroupSchema = z.object({
+  bookId: z.number(),
+  bookName: z.string(),
+  sectionId: z.number().nullable(),
+  sectionName: z.string().nullable(),
+  attemptCount: z.number(),
+  mostRecentScore: z.number(),
+  mostRecentTotalQuestions: z.number(),
+  mostRecentSubmittedAt: z.string(),
+  attempts: z.array(quizHistoryAttemptSchema),
+});
+
+export function validateQuizHistory(data: unknown): QuizHistoryGroup[] {
+  return z.array(quizHistoryGroupSchema).parse(data);
 }
 
 const quizReviewSchema = z.object({

@@ -73,7 +73,7 @@ def test_history_excludes_in_progress_attempts(monkeypatch, logged_in_client, ru
     assert response.json() == []
 
 
-def test_history_lists_completed_attempts_newest_first(monkeypatch, logged_in_client, ruth_section_id):
+def test_history_groups_retakes_of_the_same_section(monkeypatch, logged_in_client, ruth_section_id):
     first_id = _create_attempt(monkeypatch, logged_in_client, ruth_section_id)
     logged_in_client.post(f"/quiz-attempts/{first_id}/submit", json={"answers": [0, 1, 2, 3, 0]})
 
@@ -83,12 +83,37 @@ def test_history_lists_completed_attempts_newest_first(monkeypatch, logged_in_cl
     response = logged_in_client.get("/quiz-attempts")
     assert response.status_code == 200
     body = response.json()
-    assert [item["id"] for item in body] == [second_id, first_id]
-    assert body[0]["bookName"] == "Ruth"
-    assert body[0]["sectionName"] == "Ruth 1–2"
-    assert body[0]["score"] == 1  # only index 1 matches correct_index 1
-    assert body[0]["totalQuestions"] == 5
-    assert "submittedAt" in body[0]
+
+    assert len(body) == 1  # one group, not two flat rows
+    group = body[0]
+    assert group["bookName"] == "Ruth"
+    assert group["sectionName"] == "Ruth 1–2"
+    assert group["attemptCount"] == 2
+    assert group["mostRecentScore"] == 1  # only index 1 matches correct_index 1 -> the second, most recent attempt
+    assert group["mostRecentTotalQuestions"] == 5
+    assert "mostRecentSubmittedAt" in group
+    assert [a["id"] for a in group["attempts"]] == [second_id, first_id]  # newest first
+    assert [a["score"] for a in group["attempts"]] == [1, 5]
+
+
+def test_history_lists_different_sections_as_separate_groups_newest_first(
+    monkeypatch, logged_in_client, db_session, seeded_sections
+):
+    ruth_book = next(b for b in crud.list_books(db_session) if b.code == "Ruth")
+    ruth_sections = crud.list_sections_for_book(db_session, ruth_book.id)
+
+    first_id = _create_attempt(monkeypatch, logged_in_client, ruth_sections[0].id)
+    logged_in_client.post(f"/quiz-attempts/{first_id}/submit", json={"answers": [0, 1, 2, 3, 0]})
+
+    second_id = _create_attempt(monkeypatch, logged_in_client, ruth_sections[1].id)
+    logged_in_client.post(f"/quiz-attempts/{second_id}/submit", json={"answers": [0, 1, 2, 3, 0]})
+
+    response = logged_in_client.get("/quiz-attempts")
+    body = response.json()
+
+    assert len(body) == 2
+    assert [g["sectionName"] for g in body] == ["Ruth 3–4", "Ruth 1–2"]
+    assert all(g["attemptCount"] == 1 for g in body)
 
 
 def test_history_only_shows_the_current_users_attempts(monkeypatch, logged_in_client, db_session, ruth_section_id):

@@ -23,12 +23,24 @@
 
 .book-library__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 10px;
   /* Without this, a tall multi-section card stretches every shorter card
      sharing its row to match its height (grid's default align-items:
      stretch) — start lets each card size to its own content. */
   align-items: start;
+}
+
+@media (max-width: 520px) {
+  .book-library__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 340px) {
+  .book-library__grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .book-card {
@@ -91,7 +103,6 @@
 }
 
 .book-card--multi {
-  grid-column: span 2;
   cursor: default;
 }
 
@@ -125,10 +136,4 @@
 .book-card__section-pill--locked {
   opacity: 0.55;
   cursor: default;
-}
-
-@media (max-width: 400px) {
-  .book-card--multi {
-    grid-column: span 1;
-  }
 }

@@ -3,12 +3,16 @@
   top: 0;
   z-index: 10;
   background: var(--bg);
-  padding: 16px 0;
-  margin-top: 20px;
+  padding: 10px 0;
+  margin-top: 16px;
 }
 
-.app-header__card {
-  padding: 18px 20px;
+.app-header__bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 24px;
+  padding: 10px 16px;
   border-radius: 8px;
   background: var(--surface-1);
   border: 1px solid var(--border);

@@ -20,7 +20,7 @@ export function AppHeader({ user, onLogout, statsRefreshKey }: AppHeaderProps) {
 
   return (
     <header className="app-header">
-      <div className="app-header__card">
+      <div className="app-header__bar">
         <ProtectedHome user={user} onLogout={onLogout} />
         {showStats && <StatsBar refreshKey={statsRefreshKey} />}
       </div>

@@ -1,15 +1,8 @@
 .protected-home {
-  margin-top: 28px;
-  padding: 22px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--surface-1);
-  box-shadow: var(--shadow);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  max-width: 420px;
 }
 
 .protected-home__greeting {

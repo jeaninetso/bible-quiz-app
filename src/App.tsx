@@ -1,12 +1,11 @@
 import { useState } from 'react';
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { AchievementScreen } from './components/AchievementScreen';
+import { AppHeader } from './components/AppHeader';
 import { BookLibrary } from './components/BookLibrary';
 import { LoginForm } from './components/LoginForm';
-import { ProtectedHome } from './components/ProtectedHome';
 import { QuizFlow } from './components/QuizFlow';
 import { QuizHistory } from './components/QuizHistory';
-import { StatsBar } from './components/StatsBar';
 import { useAuth } from './lib/useAuth';
 import './App.css';
 
@@ -31,17 +30,11 @@ function Hero() {
   return <HeroText />;
 }
 
-interface LibraryHomeProps {
-  statsRefreshKey: number;
-}
-
-function LibraryHome({ statsRefreshKey }: LibraryHomeProps) {
+function LibraryHome() {
   const [activeTab, setActiveTab] = useState<Tab>('library');
 
   return (
     <>
-      <StatsBar refreshKey={statsRefreshKey} />
-
       <div className="app__tabs" role="tablist">
         <button
           type="button"
@@ -95,10 +88,10 @@ function App() {
       {auth.status === 'authenticated' && (
         <BrowserRouter>
           <Hero />
-          <ProtectedHome user={auth.user} onLogout={auth.logout} />
+          <AppHeader user={auth.user} onLogout={auth.logout} statsRefreshKey={statsRefreshKey} />
 
           <Routes>
-            <Route path="/" element={<LibraryHome statsRefreshKey={statsRefreshKey} />} />
+            <Route path="/" element={<LibraryHome />} />
             <Route path="/quiz/:sectionId" element={<QuizFlow onSubmitted={() => setStatsRefreshKey((k) => k + 1)} />} />
             <Route path="/quiz/:sectionId/achievements" element={<AchievementScreen />} />
           </Routes>

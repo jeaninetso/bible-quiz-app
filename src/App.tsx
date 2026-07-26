@@ -15,9 +15,7 @@ function HeroText() {
   return (
     <>
       <h1 className="app__title">Grow your Bible knowledge, one book at a time.</h1>
-      <p className="app__subtitle">
-        Pick a book, take a fresh quiz, learn something new — and watch your streak grow.
-      </p>
+      <p className="app__subtitle">Take a quiz to grow in your Bible knowledge!</p>
     </>
   );
 }

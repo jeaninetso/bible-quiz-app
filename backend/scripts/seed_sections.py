@@ -130,8 +130,8 @@ _SECTIONS = {
     ],
     "Prov": [
         ("Wisdom's Appeal", "Proverbs 1:1-9:999", 256),
-        ("Proverbs of Solomon", "Proverbs 10:1-24:999", 457),
-        ("Hezekiah's Collection & Sayings of Agur and Lemuel", "Proverbs 25:1-31:999", 202),
+        ("Solomon", "Proverbs 10:1-24:999", 457),
+        ("Hezekiah, Agur & Lemuel", "Proverbs 25:1-31:999", 202),
     ],
     "Eccl": [
         ("Ch 1-3", "Ecclesiastes 1:1-3:999", 66),

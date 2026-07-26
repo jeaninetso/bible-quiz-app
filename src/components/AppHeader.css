@@ -15,6 +15,9 @@
   padding: 10px 16px;
   border-radius: 8px;
   background: var(--surface-1);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow);
+  border: 1px solid var(--border-strong);
+  /* Stronger than the app's usual --shadow so the bar reads as a distinct
+     floating layer while book rows scroll underneath it (position: sticky
+     doesn't push content down — it overlaps whatever's beneath). */
+  box-shadow: var(--shadow-elevated);
 }

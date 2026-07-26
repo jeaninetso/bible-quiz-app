@@ -234,3 +234,10 @@ input:focus-visible,
 .btn-ghost:hover {
   border-color: var(--pop);
 }
+
+/* Compact variant — Sign Out, Exit Quiz: secondary actions that shouldn't
+   compete with the primary content around them. */
+.btn-sm {
+  font-size: 13px;
+  padding: 6px 14px;
+}

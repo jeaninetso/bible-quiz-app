@@ -22,11 +22,6 @@
   color: var(--accent-strong);
 }
 
-.quiz-flow__exit {
-  font-size: 13px;
-  padding: 6px 14px;
-}
-
 .quiz-flow__modal-overlay {
   position: fixed;
   inset: 0;

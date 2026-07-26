@@ -60,7 +60,7 @@ export function QuizFlow({ onSubmitted }: QuizFlowProps) {
   }
 
   const exitButton = (
-    <button type="button" className="btn btn-ghost quiz-flow__exit" onClick={() => setShowExitConfirm(true)}>
+    <button type="button" className="btn btn-ghost btn-sm" onClick={() => setShowExitConfirm(true)}>
       Exit Quiz
     </button>
   );

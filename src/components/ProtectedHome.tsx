@@ -12,7 +12,7 @@ export function ProtectedHome({ user, onLogout }: ProtectedHomeProps) {
       <p className="protected-home__greeting">
         Welcome back, <strong>{user.username}</strong>.
       </p>
-      <button type="button" onClick={onLogout}>
+      <button type="button" className="btn btn-ghost btn-sm" onClick={onLogout}>
         Sign out
       </button>
     </div>

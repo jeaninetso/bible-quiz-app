@@ -144,10 +144,10 @@ _SECTIONS = {
         ("Ch 5-8", "Song of Solomon 5:1-8:999", 56),
     ],
     "Isa": [
-        ("Judgment (Isaiah 1-39) (part 1)", "Isaiah 1:1-21:999", 398),
-        ("Judgment (Isaiah 1-39) (part 2)", "Isaiah 22:1-39:999", 368),
-        ("Comfort (Isaiah 40-66) (part 1)", "Isaiah 40:1-51:999", 276),
-        ("Comfort (Isaiah 40-66) (part 2)", "Isaiah 52:1-66:999", 250),
+        ("Judgment (part 1)", "Isaiah 1:1-21:999", 398),
+        ("Judgment (part 2)", "Isaiah 22:1-39:999", 368),
+        ("Comfort (part 1)", "Isaiah 40:1-51:999", 276),
+        ("Comfort (part 2)", "Isaiah 52:1-66:999", 250),
     ],
     "Jer": [
         ("Ch 1-13", "Jeremiah 1:1-13:999", 347),

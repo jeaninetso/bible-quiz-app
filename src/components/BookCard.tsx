@@ -1,3 +1,4 @@
+import { bookEmoji } from '../lib/bookEmoji';
 import type { Book } from '../types/book';
 
 interface BookCardProps {
@@ -13,7 +14,12 @@ export function BookCard({ book, onSelectSection }: BookCardProps) {
   if (book.sections.length === 0) {
     return (
       <button type="button" className="book-card book-card--locked" disabled>
-        <span className="book-card__name">{book.name}</span>
+        <span className="book-card__title">
+          <span className="book-card__name">{book.name}</span>
+          <span className="book-card__emoji" aria-hidden="true">
+            {bookEmoji(book.code)}
+          </span>
+        </span>
         <span className="book-card__meta">{chapters}</span>
         <span className="book-card__badge book-card__badge--locked">Coming soon</span>
       </button>
@@ -34,7 +40,12 @@ export function BookCard({ book, onSelectSection }: BookCardProps) {
         disabled={!section.isAvailable}
         onClick={() => onSelectSection(section.id)}
       >
-        <span className="book-card__name">{book.name}</span>
+        <span className="book-card__title">
+          <span className="book-card__name">{book.name}</span>
+          <span className="book-card__emoji" aria-hidden="true">
+            {bookEmoji(book.code)}
+          </span>
+        </span>
         <span className="book-card__meta">{chapters}</span>
         <span className={`book-card__badge book-card__badge--${section.isAvailable ? 'available' : 'locked'}`}>
           {section.isAvailable ? 'Ready' : 'Coming soon'}
@@ -47,7 +58,12 @@ export function BookCard({ book, onSelectSection }: BookCardProps) {
   // is its own independently-available pill.
   return (
     <div className="book-card book-card--multi">
-      <span className="book-card__name">{book.name}</span>
+      <span className="book-card__title">
+        <span className="book-card__name">{book.name}</span>
+        <span className="book-card__emoji" aria-hidden="true">
+          {bookEmoji(book.code)}
+        </span>
+      </span>
       <span className="book-card__meta">{chapters}</span>
       <div className="book-card__sections">
         {book.sections.map((section) => (

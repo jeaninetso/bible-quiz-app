@@ -69,6 +69,17 @@
   cursor: default;
 }
 
+.book-card__title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.book-card__emoji {
+  font-size: 15px;
+  line-height: 1;
+}
+
 .book-card__name {
   font-family: var(--font-heading);
   font-weight: 600;

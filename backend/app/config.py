@@ -29,6 +29,15 @@ SESSION_SECRET = os.environ.get("SESSION_SECRET", "dev-only-insecure-secret")
 # Browsers reject Secure cookies over plain http — keep this false for local
 # dev, set COOKIE_SECURE=true once this is ever served over https.
 COOKIE_SECURE = os.environ.get("COOKIE_SECURE", "false").lower() == "true"
+
+# "lax" works for local dev (frontend/backend are same-site: same host,
+# different ports). It silently breaks once frontend and backend live on
+# different subdomains of a shared platform domain (e.g. Render's
+# *.onrender.com) — those platform domains are on the public suffix list, so
+# each subdomain is a distinct "site", and Lax cookies are never sent on
+# cross-site fetch/XHR. Set COOKIE_SAMESITE=none (and COOKIE_SECURE=true,
+# required together) for that kind of deployment.
+COOKIE_SAMESITE = os.environ.get("COOKIE_SAMESITE", "lax")
 CORS_ORIGIN = os.environ.get("CORS_ORIGIN", "http://localhost:5173")
 
 ESV_API_KEY = os.environ.get("ESV_API_KEY", "")

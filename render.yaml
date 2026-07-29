@@ -7,10 +7,11 @@
 # rather than storing them in this file. Everything else is wired up
 # automatically, including the Postgres connection string.
 #
-# After the first deploy: the frontend's real URL won't exist yet, so
-# CORS_ORIGIN below is a placeholder — update it in the Render dashboard
-# to the actual generated frontend URL once you see it, then redeploy
-# the API service (env var changes require a redeploy to take effect).
+# CORS_ORIGIN/VITE_API_URL below assume Render assigns URLs matching the
+# service `name`s above (https://<name>.onrender.com) — true as of this
+# writing, but double check against the actual dashboard after a first
+# deploy and fix + redeploy if a name collision forced Render to pick
+# something else.
 
 databases:
   - name: scripture-quest-db
@@ -44,8 +45,10 @@ services:
         generateValue: true
       - key: COOKIE_SECURE
         value: "true"
+      - key: COOKIE_SAMESITE
+        value: none # frontend + API are different onrender.com subdomains — cross-site, needs None+Secure, not Lax
       - key: CORS_ORIGIN
-        value: https://scripture-quest.onrender.com # placeholder — see note above
+        value: https://scripture-quest-frontend.onrender.com
       - key: RATE_LIMIT_LOGIN
         value: 10/minute
       - key: RATE_LIMIT_QUIZ

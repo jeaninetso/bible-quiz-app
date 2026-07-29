@@ -14,6 +14,16 @@ load_dotenv(BACKEND_DIR / ".env")
 # points DATABASE_URL at Postgres instead.
 DATABASE_URL = os.environ.get("DATABASE_URL", f"sqlite:///{BACKEND_DIR / 'dev.db'}")
 
+# Hosts that provision Postgres for you (Render, Heroku-style providers) hand
+# back a bare "postgres://" or "postgresql://" URL, which makes SQLAlchemy
+# default to the psycopg2 driver — not installed here, we use psycopg (v3)
+# instead (see requirements.txt). Force the +psycopg driver onto whatever
+# scheme we're given so this works regardless of where the URL came from.
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = "postgresql+psycopg://" + DATABASE_URL[len("postgres://") :]
+elif DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = "postgresql+psycopg://" + DATABASE_URL[len("postgresql://") :]
+
 SESSION_SECRET = os.environ.get("SESSION_SECRET", "dev-only-insecure-secret")
 
 # Browsers reject Secure cookies over plain http — keep this false for local

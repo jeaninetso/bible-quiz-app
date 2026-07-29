@@ -1,0 +1,67 @@
+# Render "Blueprint" — deploys the whole app (API + Postgres + static
+# frontend) from one file. In the Render dashboard: New -> Blueprint,
+# point it at this repo, it reads this file automatically.
+#
+# Two env vars are marked `sync: false` (ESV/Anthropic API keys) because
+# they're secrets — Render will prompt you to paste them in during setup
+# rather than storing them in this file. Everything else is wired up
+# automatically, including the Postgres connection string.
+#
+# After the first deploy: the frontend's real URL won't exist yet, so
+# CORS_ORIGIN below is a placeholder — update it in the Render dashboard
+# to the actual generated frontend URL once you see it, then redeploy
+# the API service (env var changes require a redeploy to take effect).
+
+databases:
+  - name: scripture-quest-db
+    plan: free
+    postgresMajorVersion: "16"
+
+services:
+  - type: web
+    name: scripture-quest-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: >-
+      alembic upgrade head &&
+      uvicorn app.main:app --host 0.0.0.0 --port $PORT
+      --proxy-headers --forwarded-allow-ips='*'
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: scripture-quest-db
+          property: connectionString
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: CORS_ORIGIN
+        value: https://scripture-quest.onrender.com # placeholder — see note above
+      - key: RATE_LIMIT_LOGIN
+        value: 10/minute
+      - key: RATE_LIMIT_QUIZ
+        value: 20/hour
+      - key: QUIZ_MODEL
+        value: claude-haiku-4-5
+      - key: ESV_API_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+
+  - type: web
+    name: scripture-quest-frontend
+    runtime: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://scripture-quest-api.onrender.com # placeholder — Render assigns the real one; update + redeploy
+    routes:
+      # SPA fallback: react-router handles client-side paths like /quiz/12,
+      # which aren't real files — without this, refreshing on any route
+      # other than / 404s.
+      - type: rewrite
+        source: /*
+        destination: /index.html

@@ -26,3 +26,10 @@ ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 
 # One-line swap if quiz quality needs a stronger model later.
 QUIZ_MODEL = os.environ.get("QUIZ_MODEL", "claude-haiku-4-5")
+
+# slowapi rate-limit strings ("N/second|minute|hour|day"). Quiz generation
+# costs real Anthropic credits per call; login is the brute-forceable
+# endpoint. Defaults assume a small, mostly-trusted user base — tighten for
+# a public deployment.
+RATE_LIMIT_LOGIN = os.environ.get("RATE_LIMIT_LOGIN", "10/minute")
+RATE_LIMIT_QUIZ = os.environ.get("RATE_LIMIT_QUIZ", "20/hour")

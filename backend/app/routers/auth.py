@@ -1,15 +1,17 @@
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy.orm import Session
 
 from app import auth, schemas
-from app.config import COOKIE_SECURE
+from app.config import COOKIE_SECURE, RATE_LIMIT_LOGIN
 from app.database import get_db
+from app.rate_limit import limiter
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 @router.post("/login", response_model=schemas.UserOut)
-def login(body: schemas.LoginRequest, response: Response, db: Session = Depends(get_db)):
+@limiter.limit(RATE_LIMIT_LOGIN)
+def login(request: Request, body: schemas.LoginRequest, response: Response, db: Session = Depends(get_db)):
     user = auth.authenticate_user(db, body.username, body.password)
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid username or password")

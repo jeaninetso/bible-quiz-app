@@ -1,8 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
 from app import auth, crud, schemas
+from app.config import RATE_LIMIT_QUIZ
 from app.database import get_db
+from app.rate_limit import limiter
 from app.services.claude_quiz import ClaudeQuizError, generate_quiz
 from app.services.esv_client import EsvApiError, fetch_passage
 
@@ -10,7 +12,9 @@ router = APIRouter(prefix="/sections", tags=["quiz"])
 
 
 @router.post("/{section_id}/quiz", response_model=schemas.QuizAttemptOut)
+@limiter.limit(RATE_LIMIT_QUIZ)
 def create_quiz(
+    request: Request,
     section_id: int,
     db: Session = Depends(get_db),
     current_user=Depends(auth.get_current_user),

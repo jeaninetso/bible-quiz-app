@@ -18,6 +18,9 @@ from pydantic import BaseModel, Field, ValidationError
 from app.config import ANTHROPIC_API_KEY, QUIZ_MODEL
 
 QUESTION_COUNT = 5
+QUESTION_COUNT_MAX = 6  # broad passages (e.g. multi-psalm Psalms sections) can
+# legitimately need one extra question to cover the material — allow it
+# rather than retrying against a hard cap Claude keeps overrunning.
 OPTIONS_PER_QUESTION = 4
 FUN_FACT_COUNT = 2
 MAX_RETRIES = 2  # up to 3 total attempts
@@ -43,7 +46,7 @@ class FunFact(BaseModel):
 
 
 class QuizGenerationResult(BaseModel):
-    questions: list[QuizQuestion] = Field(min_length=QUESTION_COUNT, max_length=QUESTION_COUNT)
+    questions: list[QuizQuestion] = Field(min_length=QUESTION_COUNT, max_length=QUESTION_COUNT_MAX)
     fun_facts: list[FunFact] = Field(min_length=FUN_FACT_COUNT, max_length=FUN_FACT_COUNT)
 
 
@@ -68,15 +71,43 @@ def _verbatim_overlap(passage_text: str, candidate_text: str) -> bool:
     )
 
 
+# All 66 book names (+ common singular aliases like "Psalm"/"Proverb" for
+# "Psalm 2"/"Proverb 3" phrasing) — used only to detect an explicit citation
+# like "Psalm 2" or "Job 2:11" in generated text. A verbatim run is fine when
+# it's an attributed quote of a specific reference rather than passed off as
+# original phrasing; it's not fine when there's no citation to anchor it.
+_BOOK_NAMES = [
+    "Genesis", "Exodus", "Leviticus", "Numbers", "Deuteronomy", "Joshua", "Judges", "Ruth",
+    "1 Samuel", "2 Samuel", "1 Kings", "2 Kings", "1 Chronicles", "2 Chronicles",
+    "Ezra", "Nehemiah", "Esther", "Job", "Psalms", "Psalm", "Proverbs", "Proverb",
+    "Ecclesiastes", "Song of Solomon", "Isaiah", "Jeremiah", "Lamentations", "Ezekiel",
+    "Daniel", "Hosea", "Joel", "Amos", "Obadiah", "Jonah", "Micah", "Nahum", "Habakkuk",
+    "Zephaniah", "Haggai", "Zechariah", "Malachi", "Matthew", "Mark", "Luke", "John",
+    "Acts", "Romans", "1 Corinthians", "2 Corinthians", "Galatians", "Ephesians",
+    "Philippians", "Colossians", "1 Thessalonians", "2 Thessalonians", "1 Timothy",
+    "2 Timothy", "Titus", "Philemon", "Hebrews", "James", "1 Peter", "2 Peter",
+    "1 John", "2 John", "3 John", "Jude", "Revelation",
+]
+_CITATION_PATTERN = re.compile(
+    r"\b(" + "|".join(re.escape(name) for name in _BOOK_NAMES) + r")\s+\d+(:\d+(-\d+)?)?\b"
+)
+
+
+def _has_citation(text: str) -> bool:
+    return bool(_CITATION_PATTERN.search(text))
+
+
 def _find_verbatim_violation(passage_text: str, result: QuizGenerationResult) -> str | None:
     for q in result.questions:
-        if _verbatim_overlap(passage_text, q.question) or _verbatim_overlap(passage_text, q.explanation):
+        if not _has_citation(q.question) and _verbatim_overlap(passage_text, q.question):
             return f"question copies passage text verbatim: {q.question!r}"
+        if not _has_citation(q.explanation) and _verbatim_overlap(passage_text, q.explanation):
+            return f"explanation copies passage text verbatim: {q.explanation!r}"
         for option in q.options:
-            if _verbatim_overlap(passage_text, option):
+            if not _has_citation(option) and _verbatim_overlap(passage_text, option):
                 return f"answer option copies passage text verbatim: {option!r}"
     for fact in result.fun_facts:
-        if _verbatim_overlap(passage_text, fact.fact):
+        if not _has_citation(fact.fact) and _verbatim_overlap(passage_text, fact.fact):
             return f"fun fact copies passage text verbatim: {fact.fact!r}"
     return None
 
@@ -85,15 +116,22 @@ SYSTEM_PROMPT = f"""You are a Bible quiz writer for a Scripture memory app. You 
 the full ESV text of a Bible passage. Write a quiz about its content.
 
 Rules:
-- Write exactly {QUESTION_COUNT} multiple-choice questions, each with exactly \
-{OPTIONS_PER_QUESTION} options and one correct answer (correct_index, 0-based).
+- Write {QUESTION_COUNT} multiple-choice questions (up to {QUESTION_COUNT_MAX} if \
+the passage is broad enough to need it — never fewer than {QUESTION_COUNT}, never \
+more than {QUESTION_COUNT_MAX}), each with exactly {OPTIONS_PER_QUESTION} options \
+and one correct answer (correct_index, 0-based).
 - Write exactly {FUN_FACT_COUNT} fun facts about the passage (historical context, \
 literary details, cross-references elsewhere in Scripture, etc.).
 - Every question must test comprehension of the given passage — never ask about \
 verses outside it.
-- NEVER quote the passage verbatim. Paraphrase in your own words for questions, \
-options, explanations, and fun facts. Long word-for-word copies from the source \
-text will be automatically rejected.
+- Paraphrase in your own words for questions, options, explanations, and fun \
+facts — don't quote the passage verbatim without attribution. Long word-for-word \
+copies from the source text will be automatically rejected UNLESS the text \
+explicitly cites the specific reference being quoted (e.g. "According to Psalm \
+2, ..." or "Job 2:11 says ..."). A cited quote is fine; an uncited one is not. \
+If you need to reference specific names or epithets that can't be paraphrased \
+(e.g. "Eliphaz the Temanite"), either cite the verse instead of repeating the \
+phrase — e.g. "Job's three friends (Job 2:11)" — or quote it with a citation.
 - Each explanation should briefly justify why the correct answer is right.
 - Vary question difficulty and style (who/what/where/why, sequence of events, \
 character motivations, thematic significance)."""

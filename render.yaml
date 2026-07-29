@@ -46,7 +46,10 @@ services:
       - key: COOKIE_SECURE
         value: "true"
       - key: COOKIE_SAMESITE
-        value: none # frontend + API are different onrender.com subdomains — cross-site, needs None+Secure, not Lax
+        value: lax # safe again now the frontend proxies /api/* same-origin (see the frontend service's routes below) — real
+        # browsers (Chrome, Safari) block third-party cookies by default even with SameSite=None;Secure, which broke
+        # auth entirely when frontend/API were on different onrender.com subdomains. Proved via curl (server was
+        # correct) vs. real Chrome (still blocked) during smoke testing.
       - key: CORS_ORIGIN
         value: https://scripture-quest-frontend.onrender.com
       - key: RATE_LIMIT_LOGIN
@@ -66,9 +69,21 @@ services:
     buildCommand: npm install && npm run build
     staticPublishPath: dist
     envVars:
+      # Same-origin relative path, not the API's own onrender.com URL — see
+      # the /api/* rewrite below. Keeps the session cookie first-party so
+      # real browsers' third-party-cookie blocking doesn't break auth.
       - key: VITE_API_URL
-        value: https://scripture-quest-api.onrender.com # placeholder — Render assigns the real one; update + redeploy
+        value: /api
     routes:
+      # Reverse-proxy API calls through this site's own origin (order
+      # matters: first match wins, so this must come before the SPA
+      # fallback). Render forwards the request server-side and returns the
+      # response as if it came from this origin — the browser never sees
+      # scripture-quest-api.onrender.com directly, so the session cookie
+      # set by that response is first-party here, not third-party.
+      - type: rewrite
+        source: /api/*
+        destination: https://scripture-quest-api.onrender.com/*
       # SPA fallback: react-router handles client-side paths like /quiz/12,
       # which aren't real files — without this, refreshing on any route
       # other than / 404s.

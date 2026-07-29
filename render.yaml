@@ -29,6 +29,13 @@ services:
       uvicorn app.main:app --host 0.0.0.0 --port $PORT
       --proxy-headers --forwarded-allow-ips='*'
     envVars:
+      # Pinned to match local dev (.venv is 3.12.13) — Render's Python
+      # default drifts to whatever is newest (3.14 as of this writing),
+      # and pydantic-core has no prebuilt wheel yet for brand-new Python
+      # versions, so pip falls back to compiling its Rust extension from
+      # source and fails in Render's build sandbox (read-only cargo cache).
+      - key: PYTHON_VERSION
+        value: 3.12.13
       - key: DATABASE_URL
         fromDatabase:
           name: scripture-quest-db

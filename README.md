@@ -29,6 +29,27 @@ cp .env.example .env   # fill in ESV_API_KEY + ANTHROPIC_API_KEY (see below), SE
 
 No `DATABASE_URL` needed for local dev — falls back to a SQLite file (`backend/dev.db`).
 
+### Seed the database
+
+Books, quiz sections, and badges have to be loaded before there's anything to quiz on:
+
+```
+.venv/bin/alembic upgrade head
+.venv/bin/python -m scripts.seed_books
+.venv/bin/python -m scripts.seed_sections
+.venv/bin/python -m scripts.seed_badges
+```
+
+### Create your login
+
+This app is single-user, not multi-tenant — there's no public sign-up endpoint on purpose, to keep account creation off the network entirely. Create (or reset the password for) your own account with:
+
+```
+.venv/bin/python -m scripts.create_user <username>
+```
+
+It'll prompt for a password. Run it again with the same username any time you need to reset that password.
+
 ### API keys you'll need to get yourself
 
 - **ESV API** — free key at https://api.esv.org/account/create-application/. Free tier: 5,000 queries/day, and no more than 500 verses (or half a book) cached at once — fine for Ruth, worth checking again before adding a long book.

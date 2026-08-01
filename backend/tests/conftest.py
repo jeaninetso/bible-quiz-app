@@ -6,17 +6,6 @@ from sqlalchemy.pool import StaticPool
 
 from app.database import Base, get_db
 from app.main import app
-from app.rate_limit import limiter
-
-
-@pytest.fixture(autouse=True)
-def _reset_rate_limits():
-    # The limiter's in-memory storage lives on the module-level `app`
-    # singleton, so hit counts would otherwise accumulate across every test
-    # in the run (all sharing the same client key) and spuriously trip
-    # limits meant for real abusive traffic, not test volume.
-    limiter.reset()
-    yield
 
 
 @pytest.fixture()

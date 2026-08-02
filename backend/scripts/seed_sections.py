@@ -12,10 +12,9 @@ it — split further only where a piece still exceeds the API's cap. Every
 other book falls back to plain, roughly-even chapter chunking, verified
 live rather than assumed.
 
-Only Ruth and Genesis are unlocked (is_available=True) — everything else
-seeds locked (is_available=False) per the incremental-rollout plan: flip a
-book on in _AVAILABLE_BOOK_CODES below only after spot-checking its quiz
-quality.
+All books seed unlocked (is_available=True) — this is a local, single-user
+instance, so the incremental spot-check-then-unlock rollout that made sense
+for a shared production deployment no longer applies.
 
 Re-runnable: clears existing rows first. Resolves `book_id` by looking up
 Book.code, never a hardcoded id — seed_books.py's reseed is destructive, so
@@ -23,8 +22,6 @@ Book ids are not stable across runs."""
 
 from app import models
 from app.database import Base, SessionLocal, engine
-
-_AVAILABLE_BOOK_CODES = {"Ruth", "Gen"}
 
 # book_code -> [(display name, ESV reference, verse count as last verified)]
 _SECTIONS = {
@@ -371,7 +368,7 @@ def build_sections(db) -> list[models.Section]:
                     name=name,
                     reference=reference,
                     order_index=order_index,
-                    is_available=book_code in _AVAILABLE_BOOK_CODES,
+                    is_available=True,
                 )
             )
     return sections

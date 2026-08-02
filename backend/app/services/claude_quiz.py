@@ -7,7 +7,10 @@ Defense-in-depth against verbatim recitation (accuracy + copyright): the
 system prompt forbids quoting the passage directly, and _verbatim_overlap()
 independently checks Claude's output for long word-for-word runs lifted from
 the source text. A violation (or malformed output — wrong question/option
-count) triggers a bounded retry, never an unbounded loop.
+count) triggers a bounded retry, never an unbounded loop. Retries tell Claude
+exactly what was rejected and why — a blind identical retry tends to just
+reproduce the same violation, especially for short famous phrases that are
+genuinely the most natural wording.
 """
 
 import re
@@ -23,7 +26,9 @@ QUESTION_COUNT_MAX = 6  # broad passages (e.g. multi-psalm Psalms sections) can
 # rather than retrying against a hard cap Claude keeps overrunning.
 OPTIONS_PER_QUESTION = 4
 FUN_FACT_COUNT = 2
-MAX_RETRIES = 2  # up to 3 total attempts
+MAX_RETRIES = 3  # up to 4 total attempts — retries now include corrective
+# feedback naming the exact violation, so each one has a real shot at fixing
+# it rather than blindly reproducing the same text
 
 # 8+ consecutive shared words is long enough that it can't be coincidental
 # phrasing — it means Claude copied straight from the source passage.
@@ -143,19 +148,29 @@ def generate_quiz(passage_text: str, reference: str) -> QuizGenerationResult:
 
     client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 
+    base_prompt = f"Passage: {reference} (ESV)\n\n{passage_text}"
     last_error = "unknown error"
     for attempt in range(MAX_RETRIES + 1):
+        user_content = base_prompt
+        if attempt > 0:
+            # Blindly resending the same request tends to reproduce the same
+            # violation verbatim — a short, famous phrase is often genuinely
+            # the most natural wording, so Claude regenerates it unprompted.
+            # Naming exactly what was rejected gives it something to fix.
+            user_content += (
+                f"\n\nYour previous attempt was rejected for this reason: {last_error}\n"
+                "Rewrite so this specific violation doesn't recur — reword that "
+                "text further, or restructure the question/option so the exact "
+                "wording isn't needed. (Note: an answer option can't cite a verse "
+                "reference inline without giving away which option is correct — "
+                "if the violation was in an option, paraphrase it instead.)"
+            )
         try:
             response = client.messages.parse(
                 model=QUIZ_MODEL,
                 max_tokens=2048,
                 system=SYSTEM_PROMPT,
-                messages=[
-                    {
-                        "role": "user",
-                        "content": f"Passage: {reference} (ESV)\n\n{passage_text}",
-                    }
-                ],
+                messages=[{"role": "user", "content": user_content}],
                 output_format=QuizGenerationResult,
             )
         except anthropic.APIError as exc:

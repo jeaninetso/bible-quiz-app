@@ -62,7 +62,9 @@ def test_available_books_list_their_sections_in_order(logged_in_client, db_sessi
     ]
 
 
-def test_locked_book_lists_sections_but_none_are_available(logged_in_client, db_session):
+def test_all_sections_are_available_regardless_of_book_lock_state(logged_in_client, db_session):
+    # Book.isAvailable (a separate, older flag — see test_only_ruth_and_genesis_are_available)
+    # no longer gates quiz access; every seeded Section is available on its own.
     db_session.add_all(build_books())
     db_session.commit()
     db_session.add_all(build_sections(db_session))
@@ -71,4 +73,4 @@ def test_locked_book_lists_sections_but_none_are_available(logged_in_client, db_
     books = logged_in_client.get("/books").json()
     exodus = next(b for b in books if b["name"] == "Exodus")
     assert len(exodus["sections"]) > 0
-    assert all(not s["isAvailable"] for s in exodus["sections"])
+    assert all(s["isAvailable"] for s in exodus["sections"])

@@ -30,9 +30,11 @@ class FakeMessages:
     def __init__(self, responses):
         self._responses = list(responses)
         self.calls = 0
+        self.user_contents = []
 
     def parse(self, **kwargs):
         self.calls += 1
+        self.user_contents.append(kwargs["messages"][0]["content"])
         response = self._responses.pop(0)
         if isinstance(response, Exception):
             raise response
@@ -104,6 +106,11 @@ def test_generate_quiz_retries_on_verbatim_overlap_then_succeeds(monkeypatch):
     assert output is clean_result
     assert fake_client.messages.calls == 2
 
+    first_call, retry_call = fake_client.messages.user_contents
+    assert "Your previous attempt was rejected" not in first_call
+    assert "Your previous attempt was rejected" in retry_call
+    assert "famine in the land" in retry_call  # names the specific violation
+
 
 def test_generate_quiz_gives_up_after_max_retries(monkeypatch):
     passage = "In the days when the judges ruled there was a famine in the land of Judah"
@@ -127,7 +134,7 @@ def test_generate_quiz_gives_up_after_max_retries(monkeypatch):
         ],
         fun_facts=[FunFact(fact=f"Fun fact {i}.") for i in range(claude_quiz.FUN_FACT_COUNT)],
     )
-    fake_client = _patch_client(monkeypatch, [verbatim_result, verbatim_result, verbatim_result])
+    fake_client = _patch_client(monkeypatch, [verbatim_result] * (claude_quiz.MAX_RETRIES + 1))
 
     with pytest.raises(ClaudeQuizError, match="repeatedly produced invalid"):
         generate_quiz(passage, "Ruth")
